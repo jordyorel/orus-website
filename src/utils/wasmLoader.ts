@@ -17,7 +17,7 @@ const captureError = (text: string) => {
 
 type ModuleReturnType = number | string | undefined;
 
-interface OrusModule {
+interface OrusModule extends Record<string, unknown> {
   ccall?: (
     ident: string,
     returnType: 'number' | 'string',
@@ -38,25 +38,11 @@ declare global {
   }
 }
 
-const hasProtocol = (value: string) => /^(?:[a-z]+:)?\/\//i.test(value);
-
-const normalizeBase = (rawBase: string): string => {
-  if (!rawBase) return '/';
-
-  const baseWithTrailingSlash = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
-
-  if (hasProtocol(baseWithTrailingSlash)) {
-    return baseWithTrailingSlash;
-  }
-
-  if (baseWithTrailingSlash.startsWith('/')) {
-    return baseWithTrailingSlash;
-  }
-
-  return `/${baseWithTrailingSlash}`;
-};
-
 const resolveAssetUrl = (fileName: string): string => {
+  if (typeof window === 'undefined') {
+    return fileName;
+  }
+
   const baseFromEnv = (() => {
     try {
       return import.meta.env.BASE_URL;
@@ -69,16 +55,15 @@ const resolveAssetUrl = (fileName: string): string => {
     ? document.querySelector('base')?.getAttribute('href') ?? undefined
     : undefined;
 
-  const normalizedBase = normalizeBase(baseFromEnv ?? baseHref ?? '/');
+  const base = baseFromEnv ?? baseHref ?? '/';
 
-  if (hasProtocol(normalizedBase)) {
-    return `${normalizedBase}${fileName}`;
+  try {
+    const baseUrl = new URL(base, window.location.origin);
+    return new URL(fileName, baseUrl).toString();
+  } catch {
+    const sanitizedBase = base.endsWith('/') ? base : `${base}/`;
+    return `${sanitizedBase}${fileName}`;
   }
-
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const absoluteBase = origin ? new URL(normalizedBase, origin).toString() : normalizedBase;
-
-  return `${absoluteBase}${fileName}`;
 };
 
 // Initialize the Orus WASM module
@@ -89,42 +74,55 @@ const initializeOrus = async (): Promise<void> => {
   isLoading = true;
   loadPromise = new Promise((resolve, reject) => {
     // Set up the Module configuration before loading the script
-    window.Module = {
-      onRuntimeInitialized: function() {
-        console.log('Orus WebAssembly loaded!');
-        
-        try {
-          const moduleInstance = window.Module;
-          if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
-            throw new Error('Orus Module unavailable');
-          }
+    const moduleConfig: OrusModule = window.Module ?? {};
 
-          // Initialize VM
-          const initResult = moduleInstance.ccall('initWebVM', 'number', [], []);
-          if (typeof initResult !== 'number') {
-            throw new Error('Unexpected initWebVM return value');
-          }
+    const previousRuntimeInitialized = moduleConfig.onRuntimeInitialized;
 
-          if (initResult === 0) {
-            const versionResult = moduleInstance.ccall('getVersion', 'string', [], []);
-            const version = typeof versionResult === 'string' ? versionResult : 'unknown';
-            console.log('Orus VM ready, version:', version);
-            window.orusReady = true;
-            isInitialized = true;
-            isLoading = false;
-            resolve();
-          } else {
-            reject(new Error('Failed to initialize Orus VM'));
-          }
-        } catch (error) {
-          reject(error);
+    moduleConfig.onRuntimeInitialized = function() {
+      console.log('Orus WebAssembly loaded!');
+      
+      try {
+        const moduleInstance = window.Module;
+        if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
+          throw new Error('Orus Module unavailable');
         }
-      },
 
-      locateFile: (path: string) => resolveAssetUrl(path),
-      print: captureOutput,
-      printErr: captureError
+        // Initialize VM
+        const initResult = moduleInstance.ccall('initWebVM', 'number', [], []);
+        if (typeof initResult !== 'number') {
+          throw new Error('Unexpected initWebVM return value');
+        }
+
+        if (initResult === 0) {
+          const versionResult = moduleInstance.ccall('getVersion', 'string', [], []);
+          const version = typeof versionResult === 'string' ? versionResult : 'unknown';
+          console.log('Orus VM ready, version:', version);
+          window.orusReady = true;
+          isInitialized = true;
+          isLoading = false;
+          resolve();
+        } else {
+          reject(new Error('Failed to initialize Orus VM'));
+        }
+      } catch (error) {
+        reject(error);
+      }
+
+      if (typeof previousRuntimeInitialized === 'function') {
+        try {
+          previousRuntimeInitialized.call(window.Module);
+        } catch (runtimeError) {
+          console.error('Additional runtime initialization failed:', runtimeError);
+        }
+      }
     };
+
+    moduleConfig.locateFile = (path: string) => resolveAssetUrl(path);
+    moduleConfig.print = captureOutput;
+    moduleConfig.printErr = captureError;
+
+    window.orusReady = false;
+    window.Module = moduleConfig;
 
     // Set up global runOrus function
     window.runOrus = function(code: string): boolean {

@@ -14,7 +14,16 @@ export const usePlayground = () => {
   // Load code from URL parameter on mount
   useUrlCodeLoader(setCode);
 
-  const { output, isRunning, executionTime, memoryUsage, errorCount, runCode: executeCode, clearOutput } = useCodeExecution();
+  const {
+    output,
+    isRunning,
+    executionTime,
+    memoryUsage,
+    errorCount,
+    runCode: executeCode,
+    clearOutput,
+    cancelExecution
+  } = useCodeExecution();
 
   const runCode = () => {
     // Clean the code of any HTML tags before execution
@@ -44,6 +53,7 @@ export const usePlayground = () => {
     exportCode,
     showHelp,
     clearOutput,
-    handleExampleSelect
+    handleExampleSelect,
+    cancelExecution
   };
 };

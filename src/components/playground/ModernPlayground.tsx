@@ -41,7 +41,8 @@ const ModernPlayground = () => {
     exportCode,
     showHelp,
     clearOutput,
-    handleExampleSelect
+    handleExampleSelect,
+    cancelExecution
   } = usePlayground();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -59,7 +60,12 @@ const ModernPlayground = () => {
 
   const handleRunCode = () => {
     setShowBottomPanel(true);
-    runCode();
+    if (isRunning) {
+      cancelExecution('Execution stopped.');
+    } else {
+      clearOutput();
+      runCode();
+    }
   };
 
   return (
@@ -77,7 +83,6 @@ const ModernPlayground = () => {
           <div className="flex items-center space-x-1">
             <Button
               onClick={handleRunCode}
-              disabled={isRunning}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 h-8 text-sm font-medium"
             >
               {isRunning ? <Square className="w-4 h-4 mr-1" /> : <Play className="w-4 h-4 mr-1" />}

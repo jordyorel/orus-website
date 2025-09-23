@@ -42,7 +42,8 @@ const CleanPlayground = () => {
     exportCode,
     showHelp,
     clearOutput,
-    handleExampleSelect
+    handleExampleSelect,
+    cancelExecution
   } = usePlayground();
 
   const [currentFile, setCurrentFile] = useState('main.orus');
@@ -95,8 +96,8 @@ const CleanPlayground = () => {
 
   const handleRunCode = () => {
     if (isRunning) {
-      // Stop the program - this should stop execution and set isRunning to false
-      clearOutput();
+      cancelExecution('Execution stopped.');
+      setShowOutput(true);
     } else {
       // Make sure we're using the most current version of code for the current file
       const codeToRun = files[currentFile] || code;
