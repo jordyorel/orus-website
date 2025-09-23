@@ -1,0 +1,80 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
+@layer base {
+  :root {
+    --background: 28 12% 10%;
+    --foreground: 45 7% 89%;
+
+    --card: 28 12% 12%;
+    --card-foreground: 45 7% 89%;
+
+    --popover: 28 12% 12%;
+    --popover-foreground: 45 7% 89%;
+
+    --primary: 45 93% 47%;
+    --primary-foreground: 28 12% 10%;
+
+    --secondary: 28 8% 20%;
+    --secondary-foreground: 45 7% 89%;
+
+    --muted: 28 8% 16%;
+    --muted-foreground: 45 5% 60%;
+
+    --accent: 45 93% 47%;
+    --accent-foreground: 28 12% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 28 8% 20%;
+    --input: 28 8% 16%;
+    --ring: 45 93% 47%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 28 12% 8%;
+    --sidebar-foreground: 45 7% 89%;
+    --sidebar-primary: 45 93% 47%;
+    --sidebar-primary-foreground: 28 12% 10%;
+    --sidebar-accent: 28 8% 14%;
+    --sidebar-accent-foreground: 45 7% 89%;
+    --sidebar-border: 28 8% 20%;
+    --sidebar-ring: 45 93% 47%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+
+  code {
+    @apply font-fira;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-charcoal-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gold-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gold-500;
+}
