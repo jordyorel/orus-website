@@ -1,14 +1,18 @@
 
 import { Terminal, X, Trash2, Search, Copy, Filter, Clock, Zap, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
-import { OutputPanelProps } from '@/types/playground';
+import { OutputPanelProps, OutputFilterLevel } from '@/types/playground';
 import { Button } from '@/components/ui/button';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, ChangeEvent } from 'react';
+
+const isOutputFilterLevel = (value: string): value is OutputFilterLevel => (
+  value === 'all' || value === 'info' || value === 'warning' || value === 'error'
+);
 
 const OutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, errorCount }: OutputPanelProps) => {
   const [activeTab, setActiveTab] = useState<'output' | 'errors' | 'performance'>('output');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [filterLevel, setFilterLevel] = useState<'all' | 'info' | 'warning' | 'error'>('all');
+  const [filterLevel, setFilterLevel] = useState<OutputFilterLevel>('all');
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
   const [copiedLine, setCopiedLine] = useState<number | null>(null);
   // Function to convert ANSI color codes to HTML
@@ -220,7 +224,7 @@ const OutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, e
             />
             <select
               value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value as any)}
+              onChange={handleFilterLevelChange}
               className="bg-charcoal-900 text-charcoal-200 px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-gold-600"
             >
               <option value="all">All</option>
@@ -423,3 +427,9 @@ const OutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, e
 };
 
 export default OutputPanel;
+  const handleFilterLevelChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    if (isOutputFilterLevel(value)) {
+      setFilterLevel(value);
+    }
+  };

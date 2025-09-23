@@ -28,6 +28,8 @@ export interface OutputPanelProps {
   errorCount?: number;
 }
 
+export type OutputFilterLevel = 'all' | 'info' | 'warning' | 'error';
+
 export interface ExamplesSidebarProps {
   examples: CodeExample[];
   onExampleSelect: (code: string) => void;

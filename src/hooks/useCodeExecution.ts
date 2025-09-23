@@ -2,6 +2,23 @@
 import { useState, useCallback } from 'react';
 import { runOrusCode } from '@/utils/wasmLoader';
 
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: PerformanceMemory;
+}
+
+const getUsedHeapSize = (): number => {
+  if (typeof performance === 'undefined') {
+    return 0;
+  }
+
+  const perfWithMemory = performance as PerformanceWithMemory;
+  return perfWithMemory.memory?.usedJSHeapSize ?? 0;
+};
+
 export const useCodeExecution = () => {
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -17,7 +34,7 @@ export const useCodeExecution = () => {
     setErrorCount(0);
     
     const startTime = performance.now();
-    const startMemory = (performance as any).memory?.usedJSHeapSize || 0;
+    const startMemory = getUsedHeapSize();
     
     try {
       // Use the real Orus WASM compiler
@@ -36,7 +53,7 @@ export const useCodeExecution = () => {
       setErrorCount(1);
     } finally {
       const endTime = performance.now();
-      const endMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const endMemory = getUsedHeapSize();
       
       setExecutionTime(Math.round(endTime - startTime));
       setMemoryUsage(Math.max(0, endMemory - startMemory));

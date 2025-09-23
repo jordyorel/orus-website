@@ -315,7 +315,7 @@ const MonacoEditor = ({
       const currentIndent = indentMatch ? indentMatch[1] : '';
       
       // Check if we need extra indentation (after opening brackets)
-      const needsExtraIndent = /[{\[(]\s*$/.test(currentLine.trim());
+      const needsExtraIndent = /[{[(]\s*$/.test(currentLine.trim());
       const extraIndent = needsExtraIndent ? '    ' : '';
       
       // Check if next character is a closing bracket

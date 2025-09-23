@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, ChangeEvent } from 'react';
 import { 
   Terminal, 
   Copy, 
@@ -14,13 +14,24 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { OutputPanelProps } from '@/types/playground';
+import { OutputPanelProps, OutputFilterLevel } from '@/types/playground';
+
+const isOutputFilterLevel = (value: string): value is OutputFilterLevel => (
+  value === 'all' || value === 'info' || value === 'warning' || value === 'error'
+);
 
 const ModernOutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, errorCount }: OutputPanelProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [filterLevel, setFilterLevel] = useState<'all' | 'info' | 'warning' | 'error'>('all');
+  const [filterLevel, setFilterLevel] = useState<OutputFilterLevel>('all');
   const [copiedLine, setCopiedLine] = useState<number | null>(null);
+
+  const handleFilterLevelChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    if (isOutputFilterLevel(value)) {
+      setFilterLevel(value);
+    }
+  };
 
   const formatOutput = (text: string) => {
     if (!text) return '';
@@ -182,7 +193,7 @@ const ModernOutputPanel = ({ output, isRunning, onClear, executionTime, memoryUs
             />
             <select
               value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value as any)}
+              onChange={handleFilterLevelChange}
               className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded border border-slate-300 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All</option>
