@@ -61,7 +61,7 @@ const ModernPlayground = () => {
   const handleRunCode = () => {
     setShowBottomPanel(true);
     if (isRunning) {
-      cancelExecution('Execution stopped.');
+      cancelExecution();
     } else {
       clearOutput();
       runCode();

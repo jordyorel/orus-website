@@ -81,15 +81,12 @@ export const useCodeExecution = () => {
     setErrorCount(0);
   }, []);
 
-  const cancelExecution = useCallback((message?: string) => {
+  const cancelExecution = useCallback(() => {
     executionIdRef.current += 1;
     setIsRunning(false);
     setExecutionTime(0);
     setMemoryUsage(0);
     setErrorCount(0);
-    if (message) {
-      setOutput(message);
-    }
   }, []);
 
   return {

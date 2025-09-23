@@ -96,7 +96,7 @@ const CleanPlayground = () => {
 
   const handleRunCode = () => {
     if (isRunning) {
-      cancelExecution('Execution stopped.');
+      cancelExecution();
       setShowOutput(true);
     } else {
       // Make sure we're using the most current version of code for the current file
