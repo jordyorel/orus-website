@@ -35,6 +35,7 @@ const ModernPlayground = () => {
     executionTime,
     memoryUsage,
     errorCount,
+    issueSource,
     runCode,
     resetCode,
     shareCode,
@@ -286,6 +287,7 @@ const ModernPlayground = () => {
                           executionTime={executionTime}
                           memoryUsage={memoryUsage}
                           errorCount={errorCount}
+                          issueSource={issueSource}
                         />
                       )}
                       {activeTab === 'problems' && (

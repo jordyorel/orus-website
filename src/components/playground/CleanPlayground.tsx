@@ -36,6 +36,7 @@ const CleanPlayground = () => {
     executionTime,
     memoryUsage,
     errorCount,
+    issueSource,
     runCode,
     resetCode,
     shareCode,
@@ -462,6 +463,15 @@ const CleanPlayground = () => {
               <div className="h-9 flex items-center justify-between px-2" style={{ backgroundColor: '#1e1e1e' }}>
                 <div className="flex items-center space-x-2">
                   <span className="text-xs font-medium tracking-wider" style={{ color: '#a8a8a8', fontFamily: 'monospace' }}>TERMINAL</span>
+                  {issueSource !== 'none' && (
+                    <span
+                      className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                        issueSource === 'wasm' ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-200'
+                      }`}
+                    >
+                      {issueSource === 'wasm' ? 'WASM issue' : 'UI issue'}
+                    </span>
+                  )}
                 </div>
                 <div className="relative">
                   <Button

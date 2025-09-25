@@ -8,7 +8,7 @@ const isOutputFilterLevel = (value: string): value is OutputFilterLevel => (
   value === 'all' || value === 'info' || value === 'warning' || value === 'error'
 );
 
-const OutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, errorCount }: OutputPanelProps) => {
+const OutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, errorCount, issueSource = 'none' }: OutputPanelProps) => {
   const [activeTab, setActiveTab] = useState<'output' | 'errors' | 'performance'>('output');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -248,6 +248,17 @@ const OutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, e
             </div>
           ) : (
             <>
+              {issueSource !== 'none' && (
+                <div
+                  className={`mb-3 text-xs font-medium inline-flex items-center px-2 py-1 rounded-full ${
+                    issueSource === 'wasm'
+                      ? 'bg-red-500/20 text-red-200'
+                      : 'bg-amber-500/20 text-amber-200'
+                  }`}
+                >
+                  {issueSource === 'wasm' ? 'WASM runtime issue' : 'UI handling issue'}
+                </div>
+              )}
               {/* Output Tab */}
               {activeTab === 'output' && (
                 <div>

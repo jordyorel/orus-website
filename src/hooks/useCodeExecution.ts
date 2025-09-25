@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
-import { runOrusCode } from '@/utils/wasmLoader';
+import { runOrusCode, OrusWasmError } from '@/utils/wasmLoader';
 
 interface PerformanceMemory {
   usedJSHeapSize: number;
@@ -19,12 +19,15 @@ const getUsedHeapSize = (): number => {
   return perfWithMemory.memory?.usedJSHeapSize ?? 0;
 };
 
+export type ExecutionIssueSource = 'none' | 'wasm' | 'ui';
+
 export const useCodeExecution = () => {
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [executionTime, setExecutionTime] = useState<number>(0);
   const [memoryUsage, setMemoryUsage] = useState<number>(0);
   const [errorCount, setErrorCount] = useState<number>(0);
+  const [issueSource, setIssueSource] = useState<ExecutionIssueSource>('none');
   const executionIdRef = useRef(0);
 
   const runCode = useCallback(async (code: string) => {
@@ -36,6 +39,7 @@ export const useCodeExecution = () => {
     setExecutionTime(0);
     setMemoryUsage(0);
     setErrorCount(0);
+    setIssueSource('none');
     
     const startTime = performance.now();
     const startMemory = getUsedHeapSize();
@@ -48,6 +52,7 @@ export const useCodeExecution = () => {
       }
 
       setOutput(result);
+      setIssueSource('none');
       
       // Calculate errors in output
       const errors = result.split('\n').filter(line => 
@@ -57,8 +62,14 @@ export const useCodeExecution = () => {
       
     } catch (error) {
       if (executionId === executionIdRef.current) {
-        const errorMsg = `Error: ${error}`;
-        setOutput(errorMsg);
+        if (error instanceof OrusWasmError) {
+          setIssueSource('wasm');
+          setOutput(error.message);
+        } else {
+          setIssueSource('ui');
+          const message = error instanceof Error ? error.message : String(error);
+          setOutput(`Error: ${message}`);
+        }
         setErrorCount(1);
       }
     } finally {
@@ -79,6 +90,7 @@ export const useCodeExecution = () => {
     setExecutionTime(0);
     setMemoryUsage(0);
     setErrorCount(0);
+    setIssueSource('none');
   }, []);
 
   const cancelExecution = useCallback(() => {
@@ -87,6 +99,7 @@ export const useCodeExecution = () => {
     setExecutionTime(0);
     setMemoryUsage(0);
     setErrorCount(0);
+    setIssueSource('none');
   }, []);
 
   return {
@@ -95,6 +108,7 @@ export const useCodeExecution = () => {
     executionTime,
     memoryUsage,
     errorCount,
+    issueSource,
     runCode,
     clearOutput,
     cancelExecution

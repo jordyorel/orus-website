@@ -17,6 +17,21 @@ const captureError = (text: string) => {
 
 type ModuleReturnType = number | string | undefined;
 
+export type OrusWasmErrorType = 'module_load' | 'initialization' | 'runtime';
+
+export class OrusWasmError extends Error {
+  type: OrusWasmErrorType;
+
+  constructor(message: string, type: OrusWasmErrorType, cause?: unknown) {
+    super(message);
+    this.name = 'OrusWasmError';
+    this.type = type;
+    if (cause !== undefined) {
+      (this as Error & { cause?: unknown }).cause = cause;
+    }
+  }
+}
+
 interface OrusModule extends Record<string, unknown> {
   ccall?: (
     ident: string,
@@ -84,13 +99,13 @@ const initializeOrus = async (): Promise<void> => {
       try {
         const moduleInstance = window.Module;
         if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
-          throw new Error('Orus Module unavailable');
+          throw new OrusWasmError('Orus Module unavailable', 'initialization');
         }
 
         // Initialize VM
         const initResult = moduleInstance.ccall('initWebVM', 'number', [], []);
         if (typeof initResult !== 'number') {
-          throw new Error('Unexpected initWebVM return value');
+          throw new OrusWasmError('Unexpected initWebVM return value', 'initialization');
         }
 
         if (initResult === 0) {
@@ -102,10 +117,10 @@ const initializeOrus = async (): Promise<void> => {
           isLoading = false;
           resolve();
         } else {
-          reject(new Error('Failed to initialize Orus VM'));
+          reject(new OrusWasmError('Failed to initialize Orus VM', 'initialization'));
         }
       } catch (error) {
-        reject(error);
+        reject(error instanceof OrusWasmError ? error : new OrusWasmError('Failed to initialize Orus VM', 'initialization', error));
       }
 
       if (typeof previousRuntimeInitialized === 'function') {
@@ -126,39 +141,53 @@ const initializeOrus = async (): Promise<void> => {
 
     // Set up global runOrus function
     window.runOrus = function(code: string): boolean {
-      if (!window.orusReady) return false;
+      if (!window.orusReady) {
+        throw new OrusWasmError('Orus runtime not ready', 'initialization');
+      }
 
       try {
         const moduleInstance = window.Module;
         if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
-          throw new Error('Orus Module unavailable');
+          throw new OrusWasmError('Orus Module unavailable', 'initialization');
         }
 
         const result = moduleInstance.ccall('runSource', 'number', ['string'], [code]);
         if (typeof result !== 'number') {
-          throw new Error('Unexpected runSource return value');
+          throw new OrusWasmError('Unexpected runSource return value', 'runtime');
         }
 
         return result === 0; // true = success, false = error
       } catch (error) {
         console.error('Orus execution error:', error);
         captureError(`Execution error: ${error}`);
-        return false;
+        throw error instanceof OrusWasmError
+          ? error
+          : new OrusWasmError('Orus execution error', 'runtime', error);
       }
     };
 
-    // Load the working orus-simple.js script
-    const script = document.createElement('script');
-    script.src = resolveAssetUrl('orus-simple.js');
-    script.onload = () => {
-      console.log('Orus script loaded successfully');
+    const appendScript = (src: string, allowFallback: boolean) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => {
+        console.log('Orus script loaded successfully from', src);
+      };
+      script.onerror = () => {
+        document.head.removeChild(script);
+        if (allowFallback && src !== '/orus-simple.js') {
+          console.warn('Retrying Orus script load from root /orus-simple.js');
+          appendScript('/orus-simple.js', false);
+        } else {
+          isLoading = false;
+          reject(new OrusWasmError(`Failed to load orus-simple.js from ${src}`, 'module_load'));
+        }
+      };
+
+      document.head.appendChild(script);
     };
-    script.onerror = () => {
-      isLoading = false;
-      reject(new Error('Failed to load orus-simple.js'));
-    };
-    
-    document.head.appendChild(script);
+
+    // Load the working orus-simple.js script with fallback
+    appendScript(resolveAssetUrl('orus-simple.js'), true);
   });
 
   return loadPromise;
@@ -176,15 +205,17 @@ export const runOrusCode = async (code: string): Promise<string> => {
     if (typeof window.runOrus === 'function') {
       const success = window.runOrus(code);
       if (!success && !currentOutput) {
-        return 'Execution failed - check console for details';
+        throw new OrusWasmError('Execution failed - check console for details', 'runtime');
       }
     } else {
-      return 'Orus runtime not available';
+      throw new OrusWasmError('Orus runtime not available', 'module_load');
     }
     
     return currentOutput || 'Code executed successfully (no output)';
   } catch (error) {
-    console.error('Failed to run Orus code:', error);
-    return `Error: ${error}`;
+    if (error instanceof OrusWasmError) {
+      throw error;
+    }
+    throw new OrusWasmError('Failed to run Orus code', 'runtime', error);
   }
 };

@@ -3,6 +3,7 @@ import PlaygroundToolbar from './PlaygroundToolbar';
 import CodeEditor from './CodeEditor';
 import OutputPanel from './OutputPanel';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import type { ExecutionIssueSource } from '@/types/playground';
 
 interface PlaygroundContentProps {
   code: string;
@@ -12,6 +13,7 @@ interface PlaygroundContentProps {
   executionTime?: number;
   memoryUsage?: number;
   errorCount?: number;
+  issueSource?: ExecutionIssueSource;
   onRun: () => void;
   onReset: () => void;
   onShare: () => void;
@@ -28,6 +30,7 @@ const PlaygroundContent = ({
   executionTime,
   memoryUsage,
   errorCount,
+  issueSource,
   onRun,
   onReset,
   onShare,
@@ -68,6 +71,7 @@ const PlaygroundContent = ({
               executionTime={executionTime}
               memoryUsage={memoryUsage}
               errorCount={errorCount}
+              issueSource={issueSource}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

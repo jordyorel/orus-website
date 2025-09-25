@@ -19,6 +19,8 @@ export interface CodeEditorProps {
   onChange: (code: string) => void;
 }
 
+export type ExecutionIssueSource = 'none' | 'wasm' | 'ui';
+
 export interface OutputPanelProps {
   output: string;
   isRunning: boolean;
@@ -26,6 +28,7 @@ export interface OutputPanelProps {
   executionTime?: number;
   memoryUsage?: number;
   errorCount?: number;
+  issueSource?: ExecutionIssueSource;
 }
 
 export type OutputFilterLevel = 'all' | 'info' | 'warning' | 'error';

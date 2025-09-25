@@ -20,7 +20,7 @@ const isOutputFilterLevel = (value: string): value is OutputFilterLevel => (
   value === 'all' || value === 'info' || value === 'warning' || value === 'error'
 );
 
-const ModernOutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, errorCount }: OutputPanelProps) => {
+const ModernOutputPanel = ({ output, isRunning, onClear, executionTime, memoryUsage, errorCount, issueSource = 'none' }: OutputPanelProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [filterLevel, setFilterLevel] = useState<OutputFilterLevel>('all');
@@ -155,6 +155,17 @@ const ModernOutputPanel = ({ output, isRunning, onClear, executionTime, memoryUs
         <div className="flex items-center space-x-3">
           <Terminal className="w-4 h-4 text-slate-600 dark:text-slate-400" />
           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Output</span>
+          {issueSource !== 'none' && (
+            <span
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                issueSource === 'wasm'
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+              }`}
+            >
+              {issueSource === 'wasm' ? 'WASM issue' : 'UI issue'}
+            </span>
+          )}
           {processedOutput.lines.length > 0 && (
             <span className="text-xs text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">
               {processedOutput.lines.length} lines

@@ -20,6 +20,7 @@ export const usePlayground = () => {
     executionTime,
     memoryUsage,
     errorCount,
+    issueSource,
     runCode: executeCode,
     clearOutput,
     cancelExecution
@@ -47,6 +48,7 @@ export const usePlayground = () => {
     executionTime,
     memoryUsage,
     errorCount,
+    issueSource,
     runCode,
     resetCode,
     shareCode,
