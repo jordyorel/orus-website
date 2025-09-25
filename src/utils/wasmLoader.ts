@@ -1,5 +1,5 @@
 
-// WASM loader for Orus using the working orus-simple.js integration
+// WASM loader for Orus using the public/orus.js integration
 let isInitialized = false;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
@@ -174,20 +174,20 @@ const initializeOrus = async (): Promise<void> => {
       };
       script.onerror = () => {
         document.head.removeChild(script);
-        if (allowFallback && src !== '/orus-simple.js') {
-          console.warn('Retrying Orus script load from root /orus-simple.js');
-          appendScript('/orus-simple.js', false);
+        if (allowFallback && src !== '/orus.js') {
+          console.warn('Retrying Orus script load from root /orus.js');
+          appendScript('/orus.js', false);
         } else {
           isLoading = false;
-          reject(new OrusWasmError(`Failed to load orus-simple.js from ${src}`, 'module_load'));
+          reject(new OrusWasmError(`Failed to load orus.js from ${src}`, 'module_load'));
         }
       };
 
       document.head.appendChild(script);
     };
 
-    // Load the working orus-simple.js script with fallback
-    appendScript(resolveAssetUrl('orus-simple.js'), true);
+    // Load the Orus runtime script with fallback
+    appendScript(resolveAssetUrl('orus.js'), true);
   });
 
   return loadPromise;
