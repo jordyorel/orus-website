@@ -166,28 +166,49 @@ const initializeOrus = async (): Promise<void> => {
       }
     };
 
-    const appendScript = (src: string, allowFallback: boolean) => {
+    const runtimeCandidates = Array.from(
+      new Set(
+        ['orus-simple.js', 'orus.js'].flatMap((file) => {
+          const resolved = resolveAssetUrl(file);
+          const rootPath = `/${file}`;
+          return resolved === rootPath ? [resolved] : [resolved, rootPath];
+        })
+      )
+    );
+
+    const attemptedSources: string[] = [];
+
+    const appendScript = (index: number) => {
+      if (index >= runtimeCandidates.length) {
+        isLoading = false;
+        reject(
+          new OrusWasmError(
+            `Failed to load Orus runtime script from any known location. Attempted: ${attemptedSources.join(', ')}`,
+            'module_load'
+          )
+        );
+        return;
+      }
+
+      const src = runtimeCandidates[index];
       const script = document.createElement('script');
       script.src = src;
       script.onload = () => {
         console.log('Orus script loaded successfully from', src);
       };
       script.onerror = () => {
-        document.head.removeChild(script);
-        if (allowFallback && src !== '/orus.js') {
-          console.warn('Retrying Orus script load from root /orus.js');
-          appendScript('/orus.js', false);
-        } else {
-          isLoading = false;
-          reject(new OrusWasmError(`Failed to load orus.js from ${src}`, 'module_load'));
+        attemptedSources.push(src);
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
         }
+        console.warn(`Failed to load Orus script from ${src}, trying next fallback if available.`);
+        appendScript(index + 1);
       };
 
       document.head.appendChild(script);
     };
 
-    // Load the Orus runtime script with fallback
-    appendScript(resolveAssetUrl('orus.js'), true);
+    appendScript(0);
   });
 
   return loadPromise;
