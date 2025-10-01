@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import './MonacoEditor.css';
 
 interface MonacoEditorProps {
   value: string;
@@ -27,6 +28,17 @@ const MonacoEditor = ({
     clientHeight: 0
   });
   const [selectionLines, setSelectionLines] = useState<{start: number, end: number} | null>(null);
+
+  const showCustomScrollbar = scrollInfo.scrollHeight > scrollInfo.clientHeight + 1;
+  const trackHeight = scrollInfo.clientHeight || 0;
+  const maxScrollable = Math.max(scrollInfo.scrollHeight - scrollInfo.clientHeight, 1);
+  const minThumbHeight = Math.min(72, Math.max(trackHeight * 0.1, 16));
+  const thumbHeight = showCustomScrollbar
+    ? Math.max((scrollInfo.clientHeight / scrollInfo.scrollHeight) * trackHeight, minThumbHeight)
+    : trackHeight;
+  const thumbTop = showCustomScrollbar
+    ? (scrollInfo.scrollTop / maxScrollable) * Math.max(trackHeight - thumbHeight, 0)
+    : 0;
 
   // Clean the incoming value to ensure it's always plain text
   const cleanValue = value
@@ -449,92 +461,245 @@ const MonacoEditor = ({
     });
   };
 
+  const handleScrollbarMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!textareaRef.current || trackHeight === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const startY = event.clientY;
+    const startScrollTop = textareaRef.current.scrollTop;
+    const scrollRange = textareaRef.current.scrollHeight - textareaRef.current.clientHeight;
+    const trackScrollable = Math.max(trackHeight - thumbHeight, 1);
+    const previousUserSelect = document.body.style.userSelect;
+    const previousCursor = document.body.style.cursor;
+
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'grabbing';
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!textareaRef.current) {
+        return;
+      }
+      const deltaY = moveEvent.clientY - startY;
+      const scrollDelta = (deltaY / trackScrollable) * scrollRange;
+      const nextScroll = Math.min(scrollRange, Math.max(0, startScrollTop + scrollDelta));
+      textareaRef.current.scrollTop = nextScroll;
+    };
+
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = previousUserSelect;
+      document.body.style.cursor = previousCursor;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleScrollbarTrackClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!textareaRef.current || trackHeight === 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+
+    const trackRect = (event.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const clickY = event.clientY - trackRect.top;
+    const scrollRange = textareaRef.current.scrollHeight - textareaRef.current.clientHeight;
+    const trackScrollable = trackHeight - thumbHeight;
+
+    const ratio = trackScrollable > 0
+      ? (clickY - thumbHeight / 2) / trackScrollable
+      : 0;
+    const clampedRatio = Math.min(1, Math.max(0, ratio));
+    textareaRef.current.scrollTop = clampedRatio * scrollRange;
+  };
+
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+  const highlightCodeSegment = (segment: string): string => {
+    if (!segment) return '';
+
+    interface Token {
+      start: number;
+      end: number;
+      style: string;
+    }
+
+    const tokenPatterns = [
+      { pattern: /"(?:[^"\\]|\\.)*"/g, style: '#ce9178' },
+      { pattern: /'(?:[^'\\]|\\.)*'/g, style: '#ce9178' },
+      { pattern: /\b\d+(?:\.\d+)?\b/g, style: '#b5cea8' },
+      { pattern: /\b(fn|let|mut|const|static|struct|impl|if|elif|else|match|for|while|in|return|use|pub|try|catch|as|break|continue|true|false|nil)\b/g, style: '#c586c0' },
+      { pattern: /\b(i32|i64|u32|u64|f64|bool|string|void|self)\b/g, style: '#4ec9b0' },
+      { pattern: /\b(print|input|len|push|pop|reserve|type_of|timestamp|int|float)\b/g, style: '#4fc1ff' },
+      { pattern: /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, style: '#dcdcaa' },
+    ];
+
+    const tokens: Token[] = [];
+
+    const addToken = (start: number, end: number, style: string) => {
+      if (tokens.some(t => start < t.end && end > t.start)) {
+        return;
+      }
+      tokens.push({ start, end, style });
+    };
+
+    tokenPatterns.forEach(({ pattern, style }) => {
+      const regex = new RegExp(pattern.source, pattern.flags);
+      let match: RegExpExecArray | null;
+      while ((match = regex.exec(segment)) !== null) {
+        addToken(match.index, match.index + match[0].length, style);
+      }
+    });
+
+    tokens.sort((a, b) => a.start - b.start);
+
+    let result = '';
+    let cursor = 0;
+
+    tokens.forEach(token => {
+      if (cursor < token.start) {
+        result += escapeHtml(segment.slice(cursor, token.start));
+      }
+
+      result += `<span style="color: ${token.style}">${escapeHtml(segment.slice(token.start, token.end))}</span>`;
+      cursor = token.end;
+    });
+
+    if (cursor < segment.length) {
+      result += escapeHtml(segment.slice(cursor));
+    }
+
+    return result;
+  };
+
+  const findCommentIndex = (line: string): number => {
+    let inSingle = false;
+    let inDouble = false;
+    let escaped = false;
+
+    for (let i = 0; i < line.length - 1; i++) {
+      const char = line[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (!inSingle && char === '"') {
+        inDouble = !inDouble;
+        continue;
+      }
+
+      if (!inDouble && char === '\'') {
+        inSingle = !inSingle;
+        continue;
+      }
+
+      if (!inSingle && !inDouble && char === '/' && line[i + 1] === '/') {
+        return i;
+      }
+    }
+
+    return -1;
+  };
+
   const highlightSyntax = (code: string): string => {
     if (!code) return '';
 
-    return code
-      // Comments - subtle gray
-      .replace(/(\/\/.*)/g, '<span style="color: #6a9955">$1</span>')
-      // Strings - warm yellow/orange
-      .replace(/("([^"\\]|\\.)*")/g, '<span style="color: #ce9178">$1</span>')
-      .replace(/('([^'\\]|\\.)*')/g, '<span style="color: #ce9178">$1</span>')
-      // Numbers - light blue
-      .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span style="color: #b5cea8">$1</span>')
-      // Keywords - purple/magenta
-      .replace(/\b(fn|let|mut|const|static|struct|impl|if|elif|else|match|for|while|in|return|use|pub|try|catch|as|break|continue|true|false|nil)\b/g, '<span style="color: #c586c0">$1</span>')
-      // Types - cyan/blue
-      .replace(/\b(i32|i64|u32|u64|f64|bool|string|void|self)\b/g, '<span style="color: #4ec9b0">$1</span>')
-      // Built-in functions - light blue
-      .replace(/\b(print|input|len|push|pop|reserve|type_of|timestamp|int|float)\b/g, '<span style="color: #4fc1ff">$1</span>')
-      // Function names - light yellow
-      .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, '<span style="color: #dcdcaa">$1</span>')
-      // Struct names (capitalized) - cyan
-      .replace(/\b([A-Z][a-zA-Z0-9_]*)\b/g, '<span style="color: #4ec9b0">$1</span>');
+    return code.split('\n').map((line) => {
+      const commentIndex = findCommentIndex(line);
+      const codePart = commentIndex >= 0 ? line.slice(0, commentIndex) : line;
+      const commentPart = commentIndex >= 0 ? line.slice(commentIndex) : '';
+
+      const highlightedCode = highlightCodeSegment(codePart);
+      const highlightedComment = commentPart
+        ? `<span style="color: #6a9955">${escapeHtml(commentPart)}</span>`
+        : '';
+
+      return highlightedCode + highlightedComment;
+    }).join('\n');
   };
 
-  const processedValue = cleanValue
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-
   const highlightSearchTerms = (code: string): string => {
-    if (!code) return '';
-    
-    let highlighted = highlightSyntax(code);
-    
-    // Add search highlighting
-    if (searchTerm) {
-      const searchRegex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      highlighted = highlighted.replace(searchRegex, '<mark class="bg-yellow-400 text-black">$1</mark>');
-    }
-    
-    // Add bracket highlighting
-    if (matchingBrackets) {
+    const baseHighlight = highlightSyntax(code);
+
+    const applySearchHighlight = (text: string): string => {
+      if (!searchTerm) {
+        return text;
+      }
+
+      const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const searchRegex = new RegExp(`(${escapedTerm})`, 'gi');
+      return text.replace(searchRegex, '<mark class="bg-yellow-400 text-black">$1</mark>');
+    };
+
+    const applyBracketHighlight = (text: string): string => {
+      if (!matchingBrackets) {
+        return text;
+      }
+
       const { start, end } = matchingBrackets;
-      
-      // Convert positions to highlighted positions
       let currentPos = 0;
       let result = '';
-      
-      for (let i = 0; i < highlighted.length; i++) {
-        if (highlighted[i] === '<') {
-          // Skip HTML tags
-          const tagEnd = highlighted.indexOf('>', i);
+
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '<') {
+          const tagEnd = text.indexOf('>', i);
           if (tagEnd !== -1) {
-            result += highlighted.substring(i, tagEnd + 1);
+            result += text.substring(i, tagEnd + 1);
             i = tagEnd;
             continue;
           }
         }
-        
-        if (highlighted[i] === '&') {
-          // Skip HTML entities
-          const entityEnd = highlighted.indexOf(';', i);
+
+        if (text[i] === '&') {
+          const entityEnd = text.indexOf(';', i);
           if (entityEnd !== -1) {
-            result += highlighted.substring(i, entityEnd + 1);
+            result += text.substring(i, entityEnd + 1);
             i = entityEnd;
             currentPos++;
             continue;
           }
         }
-        
-        if (currentPos === start || currentPos === end) {
-          result += '<span class="bg-blue-500 bg-opacity-30 text-blue-200">';
-          result += highlighted[i];
-          result += '</span>';
+
+        if (currentPos === start) {
+          result += '<span style="background-color: rgba(100, 100, 255, 0.35); border-radius: 2px;">' + text[i];
+          if (currentPos === end) {
+            result += '</span>';
+          }
+        } else if (currentPos > start && currentPos <= end) {
+          result += text[i];
+          if (currentPos === end) {
+            result += '</span>';
+          }
         } else {
-          result += highlighted[i];
+          result += text[i];
         }
-        
+
         currentPos++;
       }
-      
+
       return result;
-    }
-    
-    return highlighted;
+    };
+
+    return applyBracketHighlight(applySearchHighlight(baseHighlight));
   };
 
   return (
@@ -642,7 +807,7 @@ const MonacoEditor = ({
               height: 'auto',
               minHeight: '100%',
               margin: 0,
-              padding: '16px',
+              padding: '16px 32px 16px 16px',
               fontFamily: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
               fontSize: '14px',
               lineHeight: '20px',
@@ -651,10 +816,11 @@ const MonacoEditor = ({
               wordWrap: 'break-word',
               overflow: 'hidden',
               pointerEvents: 'none',
-              zIndex: 1
+              zIndex: 1,
+              transform: `translate(${-scrollInfo.scrollLeft}px, ${-scrollInfo.scrollTop}px)`
             }}
             dangerouslySetInnerHTML={{
-              __html: highlightSearchTerms(processedValue) || '<span style="color: #6a9955">// Write your Orus code here...</span>'
+              __html: highlightSearchTerms(cleanValue) || '<span style="color: #6a9955">// Write your Orus code here...</span>'
             }}
           />
 
@@ -670,7 +836,7 @@ const MonacoEditor = ({
                       position: 'absolute',
                       top: 16 + line * 20 - scrollInfo.scrollTop,
                       left: 0,
-                      right: 0,
+                      right: 32,
                       height: 20,
                       background: 'rgba(173, 214, 255, 0.3)',
                       transform: `translateX(-${scrollInfo.scrollLeft}px)`,
@@ -693,11 +859,12 @@ const MonacoEditor = ({
             onClick={handleCursorMove}
             onScroll={handleScroll}
             onSelect={handleSelectionChange}
+            className="orus-editor-scrollbar"
             style={{
               width: '100%',
               height: '100%',
               margin: 0,
-              padding: '16px',
+              padding: '16px 32px 16px 16px',
               fontFamily: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
               fontSize: '14px',
               lineHeight: '20px',
@@ -720,6 +887,49 @@ const MonacoEditor = ({
             autoCorrect="off"
             autoCapitalize="off"
           />
+
+          {showCustomScrollbar && trackHeight > 0 && (
+            <div
+              onMouseDown={handleScrollbarTrackClick}
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 6,
+                width: '10px',
+                height: '100%',
+                backgroundColor: '#1e1e1e',
+                borderLeft: '1px solid #2d2d2d',
+                borderRight: '1px solid #2d2d2d',
+                zIndex: 4,
+                cursor: 'pointer'
+              }}
+            >
+              <div
+                onMouseDown={handleScrollbarMouseDown}
+                style={{
+                  position: 'absolute',
+                  top: `${thumbTop}px`,
+                  left: 1,
+                  right: 1,
+                  height: `${thumbHeight}px`,
+                  backgroundColor: '#5a5a5a',
+                  border: '1px solid #262626',
+                  cursor: 'grab'
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: `${Math.max(2, thumbHeight * 0.15)}px`,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    backgroundColor: 'rgba(230, 230, 230, 0.45)'
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

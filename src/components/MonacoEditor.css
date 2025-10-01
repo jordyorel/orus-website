@@ -1,0 +1,8 @@
+.orus-editor-scrollbar {
+  scrollbar-width: none;
+}
+
+.orus-editor-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
