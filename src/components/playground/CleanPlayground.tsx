@@ -67,6 +67,9 @@ const CleanPlayground = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string>('');
 
+  const displayOutput = typeof output === 'string' ? output : String(output ?? '');
+  const hasOutput = displayOutput.length > 0;
+
   // Initialize main.orus with the code from the playground hook
   useEffect(() => {
     setFiles(prevFiles => ({
@@ -129,28 +132,6 @@ const CleanPlayground = () => {
     }
   };
 
-  const formatOutput = (text: string) => {
-    if (!text) return '';
-    
-    // Simple ANSI color code handling for terminal-like output
-    const ansiColors: Record<string, string> = {
-      '[31m': '<span style="color: #ff5555;">',      // red
-      '[32m': '<span style="color: #50fa7b;">',      // green  
-      '[33m': '<span style="color: #f1fa8c;">',      // yellow
-      '[34m': '<span style="color: #8be9fd;">',      // blue
-      '[35m': '<span style="color: #bd93f9;">',      // purple
-      '[36m': '<span style="color: #8be9fd;">',      // cyan
-      '[0m': '</span>',                              // reset
-    };
-    
-    let result = text;
-    Object.entries(ansiColors).forEach(([ansiCode, replacement]) => {
-      result = result.replace(new RegExp(ansiCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), replacement);
-    });
-    
-    return result;
-  };
-
   const handleSettingsToggle = () => {
     if (showSettings) {
       // Start closing animation
@@ -183,8 +164,8 @@ const CleanPlayground = () => {
   };
 
   const handleCopyOutput = () => {
-    if (output) {
-      navigator.clipboard.writeText(output);
+    if (hasOutput) {
+      navigator.clipboard.writeText(displayOutput);
     }
     setShowTerminalMenu(false);
   };
@@ -501,7 +482,7 @@ const CleanPlayground = () => {
                           <button
                             onClick={handleCopyOutput}
                             className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center space-x-2"
-                            disabled={!output}
+                            disabled={!hasOutput}
                           >
                             <Copy className="w-4 h-4" />
                             <span>Copy Output</span>
@@ -546,7 +527,7 @@ const CleanPlayground = () => {
                   >
                     Running your code...
                   </div>
-                ) : output ? (
+                ) : hasOutput ? (
                   <div 
                     className={`transition-all duration-300 ${
                       showOutput ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
@@ -557,19 +538,7 @@ const CleanPlayground = () => {
                       className="whitespace-pre-wrap"
                       style={{ color: '#ffffff' }}
                     >
-                      {/* Comprehensive text cleaning for output */}
-                      {typeof output === 'string' 
-                        ? output
-                            .replace(/<[^>]*>/g, '') // Remove HTML tags
-                            .replace(/&lt;/g, '<')    // Decode HTML entities
-                            .replace(/&gt;/g, '>')
-                            .replace(/&amp;/g, '&')
-                            .replace(/&quot;/g, '"')
-                            .replace(/&#39;/g, "'")
-                            .replace(/#[0-9a-fA-F]{6}/g, '') // Remove any hex color codes
-                            .replace(/color:\s*[^;]+;?/gi, '') // Remove any CSS color properties
-                        : output
-                      }
+                      {displayOutput}
                     </div>
                     {/* Cursor after output */}
                     <div className="flex items-center">
@@ -612,7 +581,7 @@ const CleanPlayground = () => {
         <>
           {/* Backdrop */}
           <div 
-            className={`fixed inset-0 bg-black z-40 transition-opacity duration-[350ms] ease-out ${
+            className={`fixed inset-0 bg-black z-40 transition-opacity [transition-duration:350ms] ease-out ${
               isSettingsClosing ? 'opacity-0' : 'opacity-50'
             }`}
             onClick={handleSettingsClose}
@@ -620,7 +589,7 @@ const CleanPlayground = () => {
           
           {/* Settings Panel */}
           <div 
-            className={`fixed top-0 right-0 h-full w-80 z-50 transition-transform duration-[350ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${
+            className={`fixed top-0 right-0 h-full w-80 z-50 transition-transform [transition-duration:350ms] [transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] ${
               isSettingsClosing 
                 ? 'transform translate-x-full' 
                 : isSettingsAnimating
@@ -772,7 +741,7 @@ const CleanPlayground = () => {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black z-40 transition-opacity duration-[250ms]"
+            className="fixed inset-0 bg-black z-40 transition-opacity [transition-duration:250ms]"
             style={{ opacity: 0.5 }}
             onClick={() => setShowNewFileDialog(false)}
           />
@@ -843,7 +812,7 @@ const CleanPlayground = () => {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black z-40 transition-opacity duration-[250ms]"
+            className="fixed inset-0 bg-black z-40 transition-opacity [transition-duration:250ms]"
             style={{ opacity: 0.5 }}
             onClick={cancelDeleteFile}
           />

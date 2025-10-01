@@ -7,12 +7,20 @@ let loadPromise: Promise<void> | null = null;
 // Global output capture for the playground
 let currentOutput = '';
 
+const appendWithTrailingNewline = (value: string) => {
+  if (!value) {
+    return;
+  }
+
+  currentOutput += value.endsWith('\n') ? value : `${value}\n`;
+};
+
 const captureOutput = (text: string) => {
-  currentOutput += text + '\n';
+  appendWithTrailingNewline(text);
 };
 
 const captureError = (text: string) => {
-  currentOutput += `Error: ${text}\n`;
+  appendWithTrailingNewline(`Error: ${text}`);
 };
 
 type ModuleReturnType = number | string | undefined;
@@ -40,10 +48,21 @@ interface OrusModule extends Record<string, unknown> {
     args: unknown[]
   ) => ModuleReturnType;
   onRuntimeInitialized?: () => void;
+  onAbort?: (details: unknown) => void;
   locateFile?: (path: string) => string;
   print?: (text: string) => void;
   printErr?: (text: string) => void;
+  stdin?: () => number | null;
 }
+
+type OrusModuleFactory = (moduleConfig: OrusModuleConfig) => Promise<OrusModule>;
+
+type OrusModuleConfig = Partial<OrusModule> & {
+  locateFile: (path: string) => string;
+  print: (text: string) => void;
+  printErr: (text: string) => void;
+  stdin: () => number | null;
+};
 
 declare global {
   interface Window {
@@ -87,128 +106,144 @@ const initializeOrus = async (): Promise<void> => {
   if (isLoading) return loadPromise!;
 
   isLoading = true;
-  loadPromise = new Promise((resolve, reject) => {
-    // Set up the Module configuration before loading the script
-    const moduleConfig: OrusModule = window.Module ?? {};
 
-    const previousRuntimeInitialized = moduleConfig.onRuntimeInitialized;
+  const runtimeCandidates = Array.from(
+    new Set(
+      ['orus.js'].flatMap((file) => {
+        const resolved = resolveAssetUrl(file);
+        const absoluteFromLocation = typeof window !== 'undefined'
+          ? new URL(file, window.location.href).toString()
+          : resolved;
+        const rootPath = `/${file}`;
+        return [resolved, absoluteFromLocation, rootPath];
+      })
+    )
+  );
 
-    moduleConfig.onRuntimeInitialized = function() {
-      console.log('Orus WebAssembly loaded!');
-      
-      try {
-        const moduleInstance = window.Module;
-        if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
-          throw new OrusWasmError('Orus Module unavailable', 'initialization');
-        }
-
-        // Initialize VM
-        const initResult = moduleInstance.ccall('initWebVM', 'number', [], []);
-        if (typeof initResult !== 'number') {
-          throw new OrusWasmError('Unexpected initWebVM return value', 'initialization');
-        }
-
-        if (initResult === 0) {
-          const versionResult = moduleInstance.ccall('getVersion', 'string', [], []);
-          const version = typeof versionResult === 'string' ? versionResult : 'unknown';
-          console.log('Orus VM ready, version:', version);
-          window.orusReady = true;
-          isInitialized = true;
-          isLoading = false;
-          resolve();
-        } else {
-          reject(new OrusWasmError('Failed to initialize Orus VM', 'initialization'));
-        }
-      } catch (error) {
-        reject(error instanceof OrusWasmError ? error : new OrusWasmError('Failed to initialize Orus VM', 'initialization', error));
-      }
-
-      if (typeof previousRuntimeInitialized === 'function') {
-        try {
-          previousRuntimeInitialized.call(window.Module);
-        } catch (runtimeError) {
-          console.error('Additional runtime initialization failed:', runtimeError);
-        }
-      }
+  loadPromise = (async () => {
+    const moduleConfig: OrusModuleConfig = {
+      locateFile: (path: string) => resolveAssetUrl(path),
+      print: captureOutput,
+      printErr: captureError,
+      stdin: () => null,
     };
-
-    moduleConfig.locateFile = (path: string) => resolveAssetUrl(path);
-    moduleConfig.print = captureOutput;
-    moduleConfig.printErr = captureError;
 
     window.orusReady = false;
-    window.Module = moduleConfig;
-
-    // Set up global runOrus function
-    window.runOrus = function(code: string): boolean {
-      if (!window.orusReady) {
-        throw new OrusWasmError('Orus runtime not ready', 'initialization');
-      }
-
-      try {
-        const moduleInstance = window.Module;
-        if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
-          throw new OrusWasmError('Orus Module unavailable', 'initialization');
-        }
-
-        const result = moduleInstance.ccall('runSource', 'number', ['string'], [code]);
-        if (typeof result !== 'number') {
-          throw new OrusWasmError('Unexpected runSource return value', 'runtime');
-        }
-
-        return result === 0; // true = success, false = error
-      } catch (error) {
-        console.error('Orus execution error:', error);
-        captureError(`Execution error: ${error}`);
-        throw error instanceof OrusWasmError
-          ? error
-          : new OrusWasmError('Orus execution error', 'runtime', error);
-      }
-    };
-
-    const runtimeCandidates = Array.from(
-      new Set(
-        ['orus-simple.js', 'orus.js'].flatMap((file) => {
-          const resolved = resolveAssetUrl(file);
-          const rootPath = `/${file}`;
-          return resolved === rootPath ? [resolved] : [resolved, rootPath];
-        })
-      )
-    );
 
     const attemptedSources: string[] = [];
+    let lastError: unknown;
 
-    const appendScript = (index: number) => {
-      if (index >= runtimeCandidates.length) {
-        isLoading = false;
-        reject(
-          new OrusWasmError(
-            `Failed to load Orus runtime script from any known location. Attempted: ${attemptedSources.join(', ')}`,
+    for (const src of runtimeCandidates) {
+      try {
+        const response = await fetch(src, { credentials: 'same-origin' });
+        if (!response.ok) {
+          throw new OrusWasmError(
+            `Failed to fetch Orus runtime from ${src} (status ${response.status})`,
             'module_load'
-          )
-        );
-        return;
-      }
-
-      const src = runtimeCandidates[index];
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = () => {
-        console.log('Orus script loaded successfully from', src);
-      };
-      script.onerror = () => {
-        attemptedSources.push(src);
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
+          );
         }
-        console.warn(`Failed to load Orus script from ${src}, trying next fallback if available.`);
-        appendScript(index + 1);
-      };
 
-      document.head.appendChild(script);
-    };
+        const scriptText = await response.text();
+        const blob = new Blob([scriptText], { type: 'text/javascript' });
+        const blobUrl = URL.createObjectURL(blob);
 
-    appendScript(0);
+        try {
+          const moduleExports: unknown = await import(/* @vite-ignore */ blobUrl);
+          const factoryCandidate =
+            (moduleExports as { default?: unknown })?.default ?? moduleExports;
+
+          if (typeof factoryCandidate !== 'function') {
+            throw new OrusWasmError(
+              `Orus runtime at ${src} does not export a module factory`,
+              'module_load'
+            );
+          }
+
+          const moduleInstance = (await (factoryCandidate as OrusModuleFactory)(
+            moduleConfig
+          )) as OrusModule;
+
+          if (!moduleInstance || typeof moduleInstance.ccall !== 'function') {
+            throw new OrusWasmError('Orus Module unavailable', 'initialization');
+          }
+
+          moduleInstance.print = captureOutput;
+          moduleInstance.printErr = captureError;
+          moduleInstance.stdin = moduleConfig.stdin;
+
+          const initResult = moduleInstance.ccall('initWebVM', 'number', [], []);
+          if (typeof initResult !== 'number') {
+            throw new OrusWasmError('Unexpected initWebVM return value', 'initialization');
+          }
+
+          if (initResult !== 0) {
+            throw new OrusWasmError('Failed to initialize Orus VM', 'initialization');
+          }
+
+          const versionResult = moduleInstance.ccall('getVersion', 'string', [], []);
+          const version = typeof versionResult === 'string' ? versionResult : 'unknown';
+          console.log('Orus WebAssembly loaded from', src);
+          console.log('Orus VM ready, version:', version);
+
+          window.Module = moduleInstance;
+          window.orusReady = true;
+
+          window.runOrus = function(code: string): boolean {
+            if (!window.orusReady) {
+              throw new OrusWasmError('Orus runtime not ready', 'initialization');
+            }
+
+            try {
+              const module = window.Module;
+              if (!module || typeof module.ccall !== 'function') {
+                throw new OrusWasmError('Orus Module unavailable', 'initialization');
+              }
+
+              const result = module.ccall('runSource', 'number', ['string'], [code]);
+              if (typeof result !== 'number') {
+                throw new OrusWasmError('Unexpected runSource return value', 'runtime');
+              }
+
+              return result === 0;
+            } catch (error) {
+              console.error('Orus execution error:', error);
+              captureError(`Execution error: ${error}`);
+              throw error instanceof OrusWasmError
+                ? error
+                : new OrusWasmError('Orus execution error', 'runtime', error);
+            }
+          };
+
+          moduleInstance.onAbort = (details: unknown) => {
+            console.error('Orus runtime aborted:', details);
+            window.orusReady = false;
+          };
+
+          isInitialized = true;
+          return;
+        } finally {
+          URL.revokeObjectURL(blobUrl);
+        }
+      } catch (error) {
+        attemptedSources.push(src);
+        lastError = error;
+        console.warn(`Failed to load Orus runtime from ${src}`, error);
+      }
+    }
+
+    const detailedMessage = lastError instanceof Error
+      ? lastError.message
+      : lastError !== undefined
+        ? String(lastError)
+        : 'unknown error';
+
+    throw new OrusWasmError(
+      `Failed to load Orus runtime module from any known location. Attempted: ${attemptedSources.join(', ')}. Last error: ${detailedMessage}`,
+      'module_load',
+      lastError
+    );
+  })().finally(() => {
+    isLoading = false;
   });
 
   return loadPromise;
@@ -232,7 +267,8 @@ export const runOrusCode = async (code: string): Promise<string> => {
       throw new OrusWasmError('Orus runtime not available', 'module_load');
     }
     
-    return currentOutput || 'Code executed successfully (no output)';
+    const normalizedOutput = currentOutput.replace(/\r\n/g, '\n');
+    return normalizedOutput || 'Code executed successfully (no output)';
   } catch (error) {
     if (error instanceof OrusWasmError) {
       throw error;

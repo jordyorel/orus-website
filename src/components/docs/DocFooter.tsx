@@ -10,9 +10,22 @@ interface DocFooterProps {
 const DocFooter = ({ nextSection }: DocFooterProps) => {
   // Define the order of sections for proper navigation
   const sectionOrder = [
-    'hello-world', 'syntax', 'variables', 'functions', 'control-flow', 
-    'pattern-matching', 'arrays', 'structs', 'enums', 'generics', 
-    'modules', 'error-handling', 'builtins', 'best-practices', 'examples'
+    'hello-world',
+    'variables',
+    'constants',
+    'types',
+    'operators',
+    'control-flow',
+    'arrays',
+    'structs',
+    'functions',
+    'pattern-matching',
+    'error-handling',
+    'generics',
+    'modules',
+    'builtins',
+    'best-practices',
+    'feature-status',
   ];
 
   const getCurrentSectionIndex = () => {

@@ -4,9 +4,7 @@ import { useUrlCodeLoader } from './useUrlCodeLoader';
 import { useCodeExecution } from './useCodeExecution';
 import { usePlaygroundActions } from './usePlaygroundActions';
 
-const DEFAULT_CODE = `fn main() {
-    print("Hello")
-}`;
+const DEFAULT_CODE = `print("Hello, Orus!")`;
 
 export const usePlayground = () => {
   const [code, setCode] = useState(DEFAULT_CODE);

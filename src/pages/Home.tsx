@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import SyntaxHighlighter from '@/components/SyntaxHighlighter';
-import { ArrowRight, Zap, Shield, Cpu, Users, Code2 } from 'lucide-react';
+import { ArrowRight, Sparkles, GitBranch, Layers, Lightbulb, Code2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -10,41 +10,37 @@ const Home = () => {
 
   const features = [
     {
-      icon: Zap,
-      title: 'Blazing Fast',
-      description: 'Zero-cost abstractions and compile-time optimizations ensure maximum performance.',
+      icon: Sparkles,
+      title: 'Expressive Syntax',
+      description: 'Rust-inspired structure with lightweight scripting ergonomics and clear semantics.',
     },
     {
-      icon: Shield,
-      title: 'Memory Safe',
-      description: 'Ownership model prevents common programming errors at compile time.',
+      icon: GitBranch,
+      title: 'Pattern Matching',
+      description: 'Match expressions, inline conditionals, and readable control flow out of the box.',
     },
     {
-      icon: Cpu,
-      title: 'Systems Level',
-      description: 'Direct hardware access with high-level ergonomics for systems programming.',
+      icon: Layers,
+      title: 'Generics & Modules',
+      description: 'Type inference, constraints, and a modular system keep projects organized.',
     },
     {
-      icon: Users,
-      title: 'Developer Friendly',
-      description: 'Intuitive syntax with powerful tooling and comprehensive error messages.',
+      icon: Lightbulb,
+      title: 'Helpful Diagnostics',
+      description: 'Descriptive runtime errors with file, line, and stack information for quick fixes.',
     },
   ];
 
-  const codeExample = `fn main() {
-    print("Hello, Orus!")
-}
+  const codeExample = `print("Hello, Orus!")
 
-fn add(a: i32, b: i32) -> i32 {
+fn add(a: i32, b: i32) -> i32:
     return a + b
-}
 
-struct Point {
+struct Point:
     x: i32,
     y: i32,
-}
 
-let p = Point{ x: 1, y: 2 }
+p = Point{ x: 1, y: 2 }
 print(p.x)`;
 
   console.log('Home component features:', features.length);
@@ -61,7 +57,7 @@ print(p.x)`;
           <div className="flex justify-end">
             <Badge className="bg-gold-500/90 border-2 border-gold-400 text-charcoal-950 px-6 py-3 text-base font-bold backdrop-blur-sm shadow-xl shadow-gold-500/30 hover:shadow-gold-400/40 transition-all duration-300 hover:bg-gold-400 hover:scale-105">
               <Code2 className="w-5 h-5 mr-2 text-charcoal-900" />
-              <span className="text-charcoal-900 font-mono tracking-wide">v0.3.0-beta</span>
+              <span className="text-charcoal-900 font-mono tracking-wide">v0.7.0</span>
             </Badge>
           </div>
         </div>
@@ -80,25 +76,16 @@ print(p.x)`;
           
           {/* Hero Tagline */}
           <p className="text-xl lg:text-2xl text-charcoal-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-            An experimental interpreted language influenced by modern languages. 
-            Build fast, safe, and expressive applications.
+            An experimental interpreted language influenced by modern scripting and Rust-like syntax.
+            Prototype quickly while retaining structure, generics, and strong runtime diagnostics.
           </p>
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/install">
-              <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8 py-3 text-lg">
-                Get Started
-                <ArrowRight className="ml-2" size={20} />
-              </Button>
-            </Link>
             <Link to="/play">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-gold-500/50 text-gold-400 hover:bg-gold-500/10 px-8 py-3 text-lg"
-              >
-                Try Online
+              <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8 py-3 text-lg">
+                Open Playground
+                <ArrowRight className="ml-2" size={20} />
               </Button>
             </Link>
           </div>
@@ -166,18 +153,9 @@ print(p.x)`;
             Join the growing community of developers who choose Orus for their systems programming needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/docs">
+            <Link to="/play">
               <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8">
-                Read the Docs
-              </Button>
-            </Link>
-            <Link to="/roadmap">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-gold-500/50 text-gold-400 hover:bg-gold-500/10 px-8"
-              >
-                View Roadmap
+                Start in the Playground
               </Button>
             </Link>
           </div>

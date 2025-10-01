@@ -9,39 +9,38 @@ const Docs = () => {
   const quickLinks = [
     {
       title: 'Getting Started Guide',
-      description: 'Learn the basics of Orus programming',
+      description: 'Write and run your first Orus program',
       icon: Book,
-      path: '/docs/hello-world'
+      path: '/docs/hello-world',
     },
     {
-      title: 'Language Features',
-      description: 'Explore Orus syntax and capabilities',  
+      title: 'Variables & Types',
+      description: 'Understand immutability, constants, and primitives',
       icon: Code,
-      path: '/docs/syntax'
+      path: '/docs/variables',
+    },
+    {
+      title: 'Control Flow',
+      description: 'Conditionals, loops, and inline expressions',
+      icon: Zap,
+      path: '/docs/control-flow',
     },
     {
       title: 'Built-in Functions',
-      description: 'Discover Orus built-in utilities',
-      icon: Zap,
-      path: '/docs/builtins'
-    },
-    {
-      title: 'Memory & Safety',
-      description: 'Understanding ownership and types',
+      description: 'Explore the standard helpers that ship with Orus',
       icon: Shield,
-      path: '/docs/variables'
-    }
+      path: '/docs/builtins',
+    },
   ];
 
   const exampleCode = `fn main() {
     print("Hello, Orus!")
 }
 
-// Variables and mutability
-let number: i32 = 5     // immutable
-let mut count = 0       // mutable
+fn add(a: i32, b: i32) -> i32 {
+    return a + b
+}
 
-// Structs and methods
 struct Point {
     x: i32,
     y: i32,
@@ -51,24 +50,25 @@ impl Point {
     fn new(x: i32, y: i32) -> Point {
         return Point{ x: x, y: y }
     }
-    
+
     fn move_by(self, dx: i32, dy: i32) {
         self.x = self.x + dx
         self.y = self.y + dy
     }
 }
 
-// Pattern matching
+let p = Point.new(1, 2)
+p.move_by(3, 4)
+
 match value {
     0 => print("zero"),
-    1 => print("one"), 
+    1 => print("one"),
     _ => print("other"),
 }
 
-// Arrays and iteration
 let nums: [i32; 3] = [1, 2, 3]
-for i in 0..5 {
-    print(i)
+for i in 0..len(nums) {
+    print(nums[i])
 }`;
 
   return (

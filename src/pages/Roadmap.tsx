@@ -1,111 +1,80 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Circle, Clock, Zap, Shield, Code, Sparkles, Cpu, Layers, Package, Settings, Globe, Database, Server, Wrench, Users, Target } from 'lucide-react';
+import { CheckCircle, Circle, Clock, Shield, Cpu, Package, Settings, Users, Target } from 'lucide-react';
 
 const Roadmap = () => {
   const roadmapItems = [
     {
-      version: 'Current',
-      title: 'Foundation Complete - Conservative v0.3.0',
+      version: 'Now',
+      title: 'Language Core (v0.7.0)',
       status: 'completed',
       date: 'Current',
-      description: 'Strong language foundations with honest assessment of production readiness (~20-25% complete)',
+      description: 'Interpreter with stable syntax, generics, modules, and runtime diagnostics.',
       features: [
-        'Static typing with full type inference and generics',
-        'Complete module system with pub/private visibility',
-        'Error handling with try/catch blocks',
-        'Mark-sweep garbage collection with memory safety',
-        'Standard library: math, random, collections, datetime',
-        'Comprehensive testing suite (209 test files)',
-        'Full-featured REPL and project execution'
+        'Pattern matching, error handling, and impl blocks',
+        'Generics with constraints and cross-module specialization',
+        'Minimal std library covering math, random, collections, datetime',
+        'Robust tests plus REPL and project execution modes',
       ],
       icon: CheckCircle,
-      color: 'green',
-      progress: '100%'
+      progress: '100%',
     },
     {
-      version: 'Phase 1',
-      title: 'Foundation Infrastructure (v0.3.0 - 0.4.0)',
+      version: 'Next',
+      title: 'Standard Library Expansion (v0.8.0)',
       status: 'in-progress',
-      date: '6-9 months',
-      description: 'Essential I/O operations, system integration, and core developer tooling',
+      date: 'Planned',
+      description: 'Strengthen the everyday toolkit before layering advanced features.',
       features: [
-        'File I/O operations (read/write files, directory operations)',
-        'Environment variables and process management',
-        'Command line argument parsing',
-        'Interactive debugger with breakpoints and variable inspection',
-        'Code formatter for consistent style',
-        'Extended standard library (std/io, std/strings, std/json, std/testing)'
+        'File and directory I/O helpers',
+        'Environment access and command-line parsing',
+        'Richer collection and string utilities',
+        'Quality-of-life CLI tooling and documentation improvements',
       ],
       icon: Clock,
-      color: 'gold',
-      progress: '25%'
+      progress: '0%',
     },
     {
-      version: 'Phase 2',
-      title: 'Developer Experience (v0.5.0 - 0.7.0)',
+      version: 'Later',
+      title: 'Tooling & Ecosystem (v0.9.0+)',
       status: 'planned',
-      date: '6-12 months',
-      description: 'Package management, advanced tooling, and network programming capabilities',
+      date: 'Future',
+      description: 'Lay groundwork for package distribution and editor support.',
       features: [
-        'Full package management system with dependency resolution',
-        'Package registry and reproducible builds',
-        'Language Server Protocol (LSP) for IDE integration',
-        'Performance profiler and documentation generator',
-        'Network programming (HTTP client/server, TCP/UDP sockets)',
-        'Cryptography and encoding libraries'
+        'Package manager with registry and reproducible builds',
+        'Language server, formatter, and profiling tools',
+        'Debugging and diagnostics enhancements',
+        'Expanded std modules exploring networking and async primitives',
       ],
       icon: Package,
-      color: 'blue',
-      progress: '0%'
+      progress: '0%',
     },
     {
-      version: 'Phase 3',
-      title: 'Production Features (v0.8.0 - 0.9.0)',
-      status: 'planned',
-      date: '6-12 months',
-      description: 'Async/await, threading, JIT compilation, and production operations',
-      features: [
-        'Async/await for non-blocking I/O and concurrency',
-        'Native threading support with synchronization',
-        'JIT compilation for performance optimization',
-        'Database connectivity and advanced data processing',
-        'Production monitoring and observability',
-        'Advanced error handling and deployment support'
-      ],
-      icon: Zap,
-      color: 'purple',
-      progress: '0%'
-    },
-    {
-      version: 'Phase 4',
-      title: 'Ecosystem Maturity (v1.0.0+)',
+      version: '1.0 Vision',
+      title: 'Production Readiness',
       status: 'future',
-      date: 'Ongoing',
-      description: 'Community growth, specialized domains, and production readiness',
+      date: 'Long term',
+      description: 'Stabilize the runtime, ecosystem, and documentation for wider adoption.',
       features: [
-        'Mature package ecosystem (100+ quality packages)',
-        'Comprehensive documentation and learning resources',
-        'Web development frameworks and tooling',
-        'Data science libraries and visualization',
-        'Systems programming and C interoperability',
-        'Active community and conference presence'
+        'Stability commitments and semantic versioning',
+        'Comprehensive learning resources and examples',
+        'Community-driven library catalog',
+        'Long-term support cadence and release process',
       ],
-      icon: Globe,
-      color: 'cyan',
-      progress: '0%'
-    }
+      icon: Target,
+      progress: '0%',
+    },
   ];
 
   const currentFeatures = [
-    { name: 'Static Typing & Generics', status: 'complete', description: 'Full type inference with generic functions and structs' },
-    { name: 'Module System', status: 'complete', description: 'Modules with use statements and pub visibility' },
-    { name: 'Error Handling', status: 'complete', description: 'Try/catch blocks for exception handling' },
-    { name: 'Garbage Collection', status: 'complete', description: 'Mark-sweep GC with memory safety' },
-    { name: 'Standard Library', status: 'partial', description: 'Math, random, collections, datetime modules' },
-    { name: 'File I/O', status: 'missing', description: 'Essential for real-world applications' },
-    { name: 'Package Management', status: 'missing', description: 'Dependency management and distribution' },
-    { name: 'Network Programming', status: 'missing', description: 'HTTP, TCP/UDP socket support' }
+    { name: 'Generics & Type Inference', status: 'complete', description: 'Type parameters with constraints and forward declarations are available today.' },
+    { name: 'Module System', status: 'complete', description: 'Organize code with modules, aliases, and public exports.' },
+    { name: 'Pattern Matching & Errors', status: 'complete', description: 'match expressions and try/catch blocks provide expressive control flow.' },
+    { name: 'Runtime Diagnostics', status: 'complete', description: 'Errors include file, line, column, and stack traces for quick debugging.' },
+    { name: 'Standard Library', status: 'partial', description: 'Focused math, random, collections, and datetime helpers ship with v0.7.0.' },
+    { name: 'Filesystem APIs', status: 'missing', description: 'Planned additions cover file reads/writes and directory introspection.' },
+    { name: 'Package Management', status: 'missing', description: 'A registry and dependency workflow will accompany tooling milestones.' },
+    { name: 'Async & Concurrency', status: 'missing', description: 'Experiments reserved until the standard library and tooling expand.' },
   ];
 
   const getStatusColor = (status: string) => {
@@ -171,20 +140,20 @@ const Roadmap = () => {
           {/* Progress Overview */}
           <div className="flex justify-center space-x-8 mb-8">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">v0.3.0</div>
+              <div className="text-2xl font-bold text-green-400">v0.7.0</div>
               <div className="text-sm text-charcoal-400">Current Version</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gold-400">20-25%</div>
-              <div className="text-sm text-charcoal-400">Production Ready</div>
+              <div className="text-2xl font-bold text-gold-400">Language Core</div>
+              <div className="text-sm text-charcoal-400">Stable today</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-400">v1.0.0</div>
-              <div className="text-sm text-charcoal-400">Target Release</div>
+              <div className="text-sm text-charcoal-400">Long-term target</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">24-36</div>
-              <div className="text-sm text-charcoal-400">Months Timeline</div>
+              <div className="text-2xl font-bold text-blue-400">Next: v0.8.0</div>
+              <div className="text-sm text-charcoal-400">Library & tooling focus</div>
             </div>
           </div>
 
@@ -195,9 +164,8 @@ const Roadmap = () => {
               <div className="text-left">
                 <h3 className="text-lg font-semibold text-white mb-2">Conservative Versioning Philosophy</h3>
                 <p className="text-charcoal-300 text-sm">
-                  We've adopted honest versioning where v0.3.0 reflects ~20-25% production completeness. 
-                  Version 1.0.0 will represent true production readiness with a complete ecosystem, 
-                  not just language features.
+                  Version 0.7.0 captures a language-focused milestone. We will only label 1.0 once the
+                  expanded standard library, tooling, and ecosystem are ready for sustained production use.
                 </p>
               </div>
             </div>
@@ -226,21 +194,21 @@ const Roadmap = () => {
 
         {/* Current Status Banner */}
         <Card className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/30 p-6 mb-12">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20 border-2 border-green-400">
-              <Cpu className="text-green-400" size={24} />
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20 border-2 border-green-400">
+                <Cpu className="text-green-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-white mb-2">🎯 Honest Assessment: Core Language Locked In</h3>
+                <p className="text-charcoal-300">
+                  v0.7.0 delivers the interpreter, generics, modules, and diagnostics described in the language guide.
+                  The next wave targets everyday libraries and tooling before exploring concurrency or package workflows.
+                </p>
+              </div>
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 font-bold px-4 py-2">
+                v0.7.0 Current
+              </Badge>
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-white mb-2">🎯 Honest Assessment: Strong Foundations Built</h3>
-              <p className="text-charcoal-300">
-                Orus has excellent language foundations with generics, modules, GC, and error handling. 
-                However, essential production features like file I/O, package management, and networking are still needed.
-              </p>
-            </div>
-            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 font-bold px-4 py-2">
-              v0.3.0 Current
-            </Badge>
-          </div>
         </Card>
 
         {/* Development Timeline */}
@@ -342,11 +310,11 @@ const Roadmap = () => {
               <h3 className="text-xl font-semibold text-white">Technical Metrics</h3>
             </div>
             <ul className="space-y-2 text-charcoal-300 text-sm">
-              <li>• 90% of Python performance for similar tasks</li>
-              <li>• {'<'}50MB baseline memory usage</li>
-              <li>• {'<'}100ms cold start time</li>
-              <li>• {'>'}95% standard library test coverage</li>
-              <li>• 209 comprehensive test files</li>
+              <li>• Interpreter implemented in C with mark-sweep GC</li>
+              <li>• Cross-platform builds for macOS, Linux, and WSL</li>
+              <li>• Generic prepass resolves forward references safely</li>
+              <li>• CLI supports REPL, script, and project execution modes</li>
+              <li>• 200+ regression samples in the <code className="text-gold-400">tests/</code> directory</li>
             </ul>
           </Card>
 
@@ -356,11 +324,11 @@ const Roadmap = () => {
               <h3 className="text-xl font-semibold text-white">Ecosystem Metrics</h3>
             </div>
             <ul className="space-y-2 text-charcoal-300 text-sm">
-              <li>• 100+ packages in registry</li>
-              <li>• {'<'}30s average time to find documentation</li>
-              <li>• 1000+ active developers</li>
-              <li>• 10+ companies using in production</li>
-              <li>• Comprehensive learning resources</li>
+              <li>• LANGUAGE.md and TUTORIAL.md maintained alongside the code</li>
+              <li>• Standard library modules for math, collections, random, datetime</li>
+              <li>• Install automation via <code className="text-gold-400">make</code> or <code className="text-gold-400">install.sh</code></li>
+              <li>• Extensive documentation roadmap in <code className="text-gold-400">docs/</code></li>
+              <li>• Examples double as executable tests within <code className="text-gold-400">tests/</code></li>
             </ul>
           </Card>
 
@@ -370,11 +338,11 @@ const Roadmap = () => {
               <h3 className="text-xl font-semibold text-white">Developer Experience</h3>
             </div>
             <ul className="space-y-2 text-charcoal-300 text-sm">
-              <li>• {'<'}5 minutes from install to first program</li>
-              <li>• 90% of errors provide actionable suggestions</li>
-              <li>• Full IDE support with LSP integration</li>
-              <li>• Junior developers productive within 1 week</li>
-              <li>• Consistent code formatting and style</li>
+              <li>• Detailed runtime errors with file, line, and stack traces</li>
+              <li>• Pattern matching and inline conditionals keep branching clear</li>
+              <li>• Built-in helpers cover printing, arrays, iteration, and math</li>
+              <li>• Generics accept Numeric or Comparable constraints</li>
+              <li>• try/catch enables graceful recovery from runtime issues</li>
             </ul>
           </Card>
         </div>
@@ -384,30 +352,30 @@ const Roadmap = () => {
           <h3 className="text-2xl font-semibold text-white mb-6 text-center">Current Development Priorities</h3>
           <div className="grid md:grid-cols-3 gap-6">
             <div>
-              <h4 className="text-lg font-semibold text-gold-400 mb-3">Short-Term (v0.3.0)</h4>
+              <h4 className="text-lg font-semibold text-gold-400 mb-3">Short-Term (v0.8.0)</h4>
               <ul className="space-y-2 text-charcoal-300 text-sm">
-                <li>• Essential I/O operations (file, environment, process)</li>
-                <li>• Interactive debugger with breakpoints</li>
-                <li>• Code formatter for consistent style</li>
-                <li>• Extended standard library modules</li>
+                <li>• File, directory, and environment APIs</li>
+                <li>• Command-line parsing helpers</li>
+                <li>• Additional collection and string utilities</li>
+                <li>• Documentation updates for new built-ins</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-lg font-semibold text-blue-400 mb-3">Medium-Term (v0.4.0 - 0.6.0)</h4>
+              <h4 className="text-lg font-semibold text-blue-400 mb-3">Medium-Term (v0.9.0)</h4>
               <ul className="space-y-2 text-charcoal-300 text-sm">
-                <li>• Package management system with registry</li>
-                <li>• Language Server Protocol for IDE integration</li>
-                <li>• Network programming capabilities</li>
-                <li>• Advanced tooling (profiler, documentation)</li>
+                <li>• Package manager and registry workflow</li>
+                <li>• Language server, formatter, and linting story</li>
+                <li>• Debugging hooks and profiler experiments</li>
+                <li>• Expanded std modules (JSON, IO utilities)</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-lg font-semibold text-purple-400 mb-3">Long-Term (v0.7.0 - 1.0.0)</h4>
+              <h4 className="text-lg font-semibold text-purple-400 mb-3">Long-Term (1.0.0)</h4>
               <ul className="space-y-2 text-charcoal-300 text-sm">
-                <li>• Async/await and threading support</li>
-                <li>• JIT compilation for performance</li>
-                <li>• Production operations and monitoring</li>
-                <li>• Complete ecosystem maturity</li>
+                <li>• Concurrency and async experimentation</li>
+                <li>• Performance tuning and profiling insights</li>
+                <li>• Stabilized APIs and semantic versioning</li>
+                <li>• Community-driven ecosystem milestones</li>
               </ul>
             </div>
           </div>
@@ -423,20 +391,20 @@ const Roadmap = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
-                href="https://github.com/orus-lang/orus" 
+                href="https://github.com/jordyorel/Orus-lang" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center px-6 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold rounded-lg transition-colors"
               >
-                View Development
+                View Repository
               </a>
               <a 
-                href="https://discord.gg/orus" 
+                href="https://github.com/jordyorel/Orus-lang/blob/main/docs/LANGUAGE.md" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center px-6 py-3 border border-gold-500/50 text-gold-400 hover:bg-gold-500/10 rounded-lg transition-colors"
               >
-                Join Community
+                Read LANGUAGE.md
               </a>
             </div>
           </div>

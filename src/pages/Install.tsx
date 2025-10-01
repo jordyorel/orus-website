@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Copy, Download, Terminal, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Install = () => {
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -15,41 +16,41 @@ const Install = () => {
 
   const installMethods = [
     {
-      title: 'Curl (Recommended)',
-      description: 'One-line installation for Unix-like systems',
-      command: 'curl --proto \'=https\' --tlsv1.2 -sSf https://sh.orus.dev | sh',
-      id: 'curl'
+      title: 'Download Binary (macOS/Linux)',
+      description: 'Grab the latest release and place it on your PATH',
+      command: 'curl -L https://github.com/jordyorel/Orus-lang/releases/download/v0.7.0/orusc -o orusc && chmod +x orusc && sudo mv orusc /usr/local/bin/',
+      id: 'download-binary',
     },
     {
-      title: 'PowerShell (Windows)',
-      description: 'Installation script for Windows systems',
-      command: 'iwr -useb https://win.orus.dev | iex',
-      id: 'powershell'
+      title: 'Build from Source',
+      description: 'Clone the repository and compile the interpreter with Make',
+      command: 'git clone https://github.com/jordyorel/Orus-lang.git && cd Orus-lang && make && sudo cp orusc /usr/local/bin/',
+      id: 'build-source',
     },
     {
-      title: 'Homebrew (macOS)',
-      description: 'Install via Homebrew package manager',
-      command: 'brew install orus',
-      id: 'homebrew'
+      title: 'Install Script',
+      description: 'Use the provided install.sh helper (requires bash)',
+      command: 'git clone https://github.com/jordyorel/Orus-lang.git && cd Orus-lang && ./install.sh',
+      id: 'install-script',
     },
   ];
 
   const requirements = [
-    'Operating System: Linux, macOS, or Windows',
-    'Architecture: x86_64 or ARM64',
-    'Memory: 512MB RAM minimum',
-    'Disk Space: 100MB available space'
+    'Operating System: macOS, Linux, or Windows (via WSL)',
+    'Architecture: x86_64 or ARM64 binaries available',
+    'Build tools: GCC or Clang, GNU Make, and Bash (for scripts)',
+    'Optional: jq and curl for release automation helpers',
   ];
 
-  const quickStart = `# Create a new Orus project
-orus new hello_world
-cd hello_world
+  const quickStart = `# Start the interactive REPL
+orusc
 
-# Build and run
-orus run
+# Run a single file
+echo 'fn main() { print("Hello, Orus!") }' > hello.orus
+orusc hello.orus
 
-# Build for release
-orus build --release`;
+# Execute a project directory
+orusc --project path/to/project`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-charcoal-950 via-charcoal-900 to-charcoal-950 py-20">
@@ -76,7 +77,7 @@ orus build --release`;
                 <Download className="text-gold-400 mt-1" size={24} />
               </div>
               
-              <div className="bg-charcoal-900 rounded-lg p-4 flex items-center justify-between">
+          <div className="bg-charcoal-900 rounded-lg p-4 flex items-center justify-between">
                 <code className="text-gold-300 font-fira text-sm lg:text-base flex-1 mr-4">
                   {method.command}
                 </code>
@@ -138,7 +139,7 @@ orus build --release`;
           </div>
           
           <p className="text-charcoal-400 mt-4">
-            After installation, you'll have access to the <code className="text-gold-400 font-fira">orus</code> command. 
+            After installation, you'll have access to the <code className="text-gold-400 font-fira">orusc</code> command. 
             Create your first project and start building!
           </p>
         </Card>
@@ -150,12 +151,16 @@ orus build --release`;
             Now that you have Orus installed, explore our documentation and try the playground.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold">
-              Read the Docs
-            </Button>
-            <Button variant="outline" className="border-gold-500/50 text-gold-400 hover:bg-gold-500/10">
-              Try Playground
-            </Button>
+            <Link to="/docs">
+              <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold">
+                Read the Docs
+              </Button>
+            </Link>
+            <Link to="/play">
+              <Button variant="outline" className="border-gold-500/50 text-gold-400 hover:bg-gold-500/10">
+                Try Playground
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

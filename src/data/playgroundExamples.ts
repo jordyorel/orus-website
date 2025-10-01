@@ -1,140 +1,74 @@
-
 import { CodeExample } from '@/types/playground';
 
 export const playgroundExamples: CodeExample[] = [
   {
     title: 'Hello World',
-    description: 'Basic hello world program',
-    code: `fn main() {
-    println!("Hello, Orus!");
-}`
+    description: 'Minimal program that prints to stdout',
+    code: `print("Hello, Orus!")`,
   },
   {
     title: 'Variables & Mutability',
-    description: 'Working with variables and mutability',
-    code: `fn main() {
-    // Immutable variable
-    let x = 5;
-    println!("The value of x is: {}", x);
-    
-    // Mutable variable
-    let mut y = 5;
-    println!("The value of y is: {}", y);
-    
-    y = 6;
-    println!("The value of y is: {}", y);
-}`
+    description: 'Bindings are immutable by default—opt into mutation with let mut',
+    code: `greeting: string = "Hi"
+mut counter = 0
+
+print(greeting)
+counter += 1
+print("Counter:", counter)`,
   },
   {
-    title: 'Data Types',
-    description: 'Working with different data types',
-    code: `fn main() {
-    // Integer types
-    let a: i32 = 42;
-    let b: u64 = 100;
-    
-    // Floating point types
-    let x: f32 = 3.14;
-    let y: f64 = 2.718281828;
-    
-    // Boolean type
-    let is_active: bool = true;
-    
-    // Character type
-    let letter: char = 'A';
-    
-    println!("Integer: {}, Unsigned: {}", a, b);
-    println!("Float32: {}, Float64: {}", x, y);
-    println!("Boolean: {}, Character: {}", is_active, letter);
-}`
+    title: 'Arrays & Loops',
+    description: 'Iterate over arrays and ranges using for and while loops',
+    code: `numbers = [1, 2, 3]
+
+for i in 0..len(numbers):
+    print("Index", i, "=>", numbers[i])
+
+mut total = 0
+for value in numbers:
+    total += value
+
+print("Total:", total)`,
   },
   {
-    title: 'Functions',
-    description: 'Defining and calling functions',
-    code: `fn main() {
-    println!("Hello, world!");
-    
-    another_function();
-    function_with_parameter(5);
-    print_labeled_measurement(5, 'h');
-    
-    let x = five();
-    println!("The value of x is: {}", x);
-    
-    let x = plus_one(5);
-    println!("The value of x is: {}", x);
-}
+    title: 'Structs & Methods',
+    description: 'Define data types with methods using impl blocks',
+    code: `struct Point:
+    x: i32
+    y: i32
 
-fn another_function() {
-    println!("Another function.");
-}
+impl Point:
+    fn new(x: i32, y: i32) -> Point:
+        return Point{ x: x, y: y }
 
-fn function_with_parameter(x: i32) {
-    println!("The value of x is: {}", x);
-}
+    fn translate(self, dx: i32, dy: i32) -> Point:
+        return Point{ x: self.x + dx, y: self.y + dy }
 
-fn print_labeled_measurement(value: i32, unit_label: char) {
-    println!("The measurement is: {}{}", value, unit_label);
-}
-
-fn five() -> i32 {
-    5
-}
-
-fn plus_one(x: i32) -> i32 {
-    x + 1
-}`
+point = Point.new(2, 4)
+shifted = point.translate(3, -1)
+print("Shifted:", shifted.x, shifted.y)`,
   },
   {
-    title: 'Control Flow',
-    description: 'Using if expressions and loops',
-    code: `fn main() {
-    let number = 6;
+    title: 'Enums & Matching',
+    description: 'Pattern match on enum variants and reuse helpers for comparisons',
+    code: `fn max(a: i32, b: i32) -> i32:
+    if a > b:
+        return a
+    return b
 
-    if number % 4 == 0 {
-        println!("number is divisible by 4");
-    } else if number % 3 == 0 {
-        println!("number is divisible by 3");
-    } else if number % 2 == 0 {
-        println!("number is divisible by 2");
-    } else {
-        println!("number is not divisible by 4, 3, or 2");
-    }
-    
-    // Using if in a let statement
-    let condition = true;
-    let number = if condition { 5 } else { 6 };
-    println!("The value of number is: {}", number);
-    
-    // Loop example
-    let mut counter = 0;
-    let result = loop {
-        counter += 1;
-        
-        if counter == 10 {
-            break counter * 2;
-        }
-    };
-    println!("The result is {}", result);
-    
-    // While loop
-    let mut number = 3;
-    while number != 0 {
-        println!("{}!", number);
-        number -= 1;
-    }
-    println!("LIFTOFF!!!");
-    
-    // For loop
-    let a = [10, 20, 30, 40, 50];
-    for element in a {
-        println!("the value is: {}", element);
-    }
-    
-    for number in (1..4).rev() {
-        println!("{}!", number);
-    }
-    println!("LIFTOFF!!!");
-}`
-  }
+enum Signal:
+    Green
+    Yellow
+    Red
+
+fn describe(signal: Signal):
+    match signal:
+        Signal.Green -> print("go")
+        Signal.Yellow -> print("slow")
+        Signal.Red -> print("stop")
+
+best = max(10, 42)
+print("Max:", best)
+describe(Signal.Green)`,
+  },
 ];
