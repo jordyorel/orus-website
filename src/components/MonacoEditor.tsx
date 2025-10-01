@@ -29,6 +29,8 @@ const MonacoEditor = ({
   });
   const [selectionLines, setSelectionLines] = useState<{start: number, end: number} | null>(null);
 
+  const currentLineTop = 16 + (currentLine - 1) * 20 - scrollInfo.scrollTop;
+
   const showCustomScrollbar = scrollInfo.scrollHeight > scrollInfo.clientHeight + 1;
   const trackHeight = scrollInfo.clientHeight || 0;
   const maxScrollable = Math.max(scrollInfo.scrollHeight - scrollInfo.clientHeight, 1);
@@ -748,8 +750,8 @@ const MonacoEditor = ({
         }}
       >
         {/* Line numbers */}
-        <div 
-          style={{ 
+        <div
+          style={{
             width: '60px',
             backgroundColor: '#1e1e1e',
             borderRight: '1px solid #2d2d30',
@@ -759,7 +761,22 @@ const MonacoEditor = ({
             overflow: 'hidden'
           }}
         >
-          <div 
+          {currentLine > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: currentLineTop,
+                left: 0,
+                right: 0,
+                height: 20,
+                background: 'rgba(255, 255, 255, 0.04)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.4)',
+                pointerEvents: 'none'
+              }}
+            />
+          )}
+          <div
             style={{
               position: 'absolute',
               top: '16px',
@@ -825,6 +842,25 @@ const MonacoEditor = ({
           />
 
           {/* Selection highlight overlay */}
+          {/* Current line highlight */}
+          {currentLine > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: currentLineTop,
+                left: 0,
+                right: 32,
+                height: 20,
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.35)',
+                transform: `translateX(-${scrollInfo.scrollLeft}px)`,
+                pointerEvents: 'none',
+                zIndex: 0
+              }}
+            />
+          )}
+
           {selectionLines && (
             <>
               {Array.from({ length: selectionLines.end - selectionLines.start + 1 }).map((_, i) => {
@@ -841,7 +877,7 @@ const MonacoEditor = ({
                       background: 'rgba(173, 214, 255, 0.3)',
                       transform: `translateX(-${scrollInfo.scrollLeft}px)`,
                       pointerEvents: 'none',
-                      zIndex: 0
+                      zIndex: 1
                     }}
                   />
                 );
@@ -894,12 +930,12 @@ const MonacoEditor = ({
               style={{
                 position: 'absolute',
                 top: 0,
-                right: 6,
-                width: '10px',
+                right: 4,
+                width: '14px',
                 height: '100%',
-                backgroundColor: '#1e1e1e',
-                borderLeft: '1px solid #2d2d2d',
-                borderRight: '1px solid #2d2d2d',
+                backgroundColor: '#252526',
+                border: '1px solid #2f2f2f',
+                boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.45)',
                 zIndex: 4,
                 cursor: 'pointer'
               }}
@@ -912,19 +948,21 @@ const MonacoEditor = ({
                   left: 1,
                   right: 1,
                   height: `${thumbHeight}px`,
-                  backgroundColor: '#5a5a5a',
-                  border: '1px solid #262626',
+                  backgroundColor: '#4d4d4d',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: 0,
+                  boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.04)',
                   cursor: 'grab'
                 }}
               >
                 <div
                   style={{
                     position: 'absolute',
-                    top: `${Math.max(2, thumbHeight * 0.15)}px`,
+                    top: `${Math.max(2, thumbHeight * 0.12)}px`,
                     left: 0,
                     right: 0,
                     height: '2px',
-                    backgroundColor: 'rgba(230, 230, 230, 0.45)'
+                    backgroundColor: 'rgba(230, 230, 230, 0.35)'
                   }}
                 />
               </div>
