@@ -1,5 +1,5 @@
 
-// WASM loader for Orus using the public/orus.js integration
+// WASM loader for Orus using the public runtime bundle
 let isInitialized = false;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
@@ -53,6 +53,7 @@ interface OrusModule extends Record<string, unknown> {
   print?: (text: string) => void;
   printErr?: (text: string) => void;
   stdin?: () => number | null;
+  noInitialRun?: boolean;
 }
 
 type OrusModuleFactory = (moduleConfig: OrusModuleConfig) => Promise<OrusModule>;
@@ -107,9 +108,11 @@ const initializeOrus = async (): Promise<void> => {
 
   isLoading = true;
 
+  const runtimeFiles = ['orus.js', 'orus_web.js'];
+
   const runtimeCandidates = Array.from(
     new Set(
-      ['orus.js'].flatMap((file) => {
+      runtimeFiles.flatMap((file) => {
         const resolved = resolveAssetUrl(file);
         const absoluteFromLocation = typeof window !== 'undefined'
           ? new URL(file, window.location.href).toString()
@@ -126,6 +129,7 @@ const initializeOrus = async (): Promise<void> => {
       print: captureOutput,
       printErr: captureError,
       stdin: () => null,
+      noInitialRun: true,
     };
 
     window.orusReady = false;
@@ -144,6 +148,13 @@ const initializeOrus = async (): Promise<void> => {
         }
 
         const scriptText = await response.text();
+        const trimmedScript = scriptText.trimStart();
+        if (trimmedScript.startsWith('<')) {
+          throw new OrusWasmError(
+            `Invalid response received for Orus runtime at ${src}`,
+            'module_load'
+          );
+        }
         const blob = new Blob([scriptText], { type: 'text/javascript' });
         const blobUrl = URL.createObjectURL(blob);
 
@@ -180,6 +191,15 @@ const initializeOrus = async (): Promise<void> => {
             throw new OrusWasmError('Failed to initialize Orus VM', 'initialization');
           }
 
+          try {
+            const registerResult = moduleInstance.ccall('registerWebBuiltins', 'number', [], []);
+            if (typeof registerResult === 'number' && registerResult !== 0) {
+              throw new OrusWasmError('Failed to register Orus web builtins', 'initialization');
+            }
+          } catch (registerError) {
+            console.warn('registerWebBuiltins unavailable, continuing with default bindings', registerError);
+          }
+
           const versionResult = moduleInstance.ccall('getVersion', 'string', [], []);
           const version = typeof versionResult === 'string' ? versionResult : 'unknown';
           console.log('Orus WebAssembly loaded from', src);
@@ -198,6 +218,9 @@ const initializeOrus = async (): Promise<void> => {
               if (!module || typeof module.ccall !== 'function') {
                 throw new OrusWasmError('Orus Module unavailable', 'initialization');
               }
+
+              module.ccall('resetVMState', 'void', [], []);
+              module.ccall('clearLastError', 'void', [], []);
 
               const result = module.ccall('runSource', 'number', ['string'], [code]);
               if (typeof result !== 'number') {
