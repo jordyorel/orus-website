@@ -29,7 +29,18 @@ const MonacoEditor = ({
   });
   const [selectionLines, setSelectionLines] = useState<{start: number, end: number} | null>(null);
 
-  const currentLineTop = 16 + (currentLine - 1) * 20 - scrollInfo.scrollTop;
+  const LINE_HEIGHT = 20;
+  const LINE_PADDING_TOP = 16;
+
+  const getLineNumberFromPosition = (text: string, position: number) => {
+    if (position <= 0) {
+      return 1;
+    }
+    return text.slice(0, position).split(/\r?\n/).length;
+  };
+
+  const currentLineTop =
+    LINE_PADDING_TOP + (currentLine - 1) * LINE_HEIGHT - scrollInfo.scrollTop;
 
   const showCustomScrollbar = scrollInfo.scrollHeight > scrollInfo.clientHeight + 1;
   const trackHeight = scrollInfo.clientHeight || 0;
@@ -55,13 +66,12 @@ const MonacoEditor = ({
     const lines = cleanValue.split('\n');
     const numbers = lines.map((_, index) => (index + 1).toString());
     setLineNumbers(numbers);
-    
+
     // Initialize current line if textarea is available
     if (textareaRef.current) {
       const cursorPos = textareaRef.current.selectionStart;
-      const textUpToCursor = cleanValue.substring(0, cursorPos);
-      const lineNumber = textUpToCursor.split('\n').length;
-      setCurrentLine(lineNumber);
+      const textareaValue = textareaRef.current.value;
+      setCurrentLine(getLineNumberFromPosition(textareaValue, cursorPos));
     }
   }, [cleanValue]);
 
@@ -83,33 +93,35 @@ const MonacoEditor = ({
     const cursorPos = textarea.selectionStart;
     
     // Update current line number
-    const textUpToCursor = cleanValue.substring(0, cursorPos);
-    const lineNumber = textUpToCursor.split('\n').length;
-    setCurrentLine(lineNumber);
-    
+    const editorValue = textarea.value;
+    setCurrentLine(getLineNumberFromPosition(editorValue, cursorPos));
+
     // Update bracket matching
-    findMatchingBracket(cursorPos);
+    findMatchingBracket(cursorPos, editorValue);
   };
 
   const updateSelection = (textarea: HTMLTextAreaElement) => {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    const editorValue = textarea.value;
     if (start === end) {
       setSelectionLines(null);
     } else {
-      const startLine = cleanValue.substring(0, start).split('\n').length - 1;
-      const endLine = cleanValue.substring(0, end).split('\n').length - 1;
+      const startLine =
+        Math.max(0, getLineNumberFromPosition(editorValue, start) - 1);
+      const endLine =
+        Math.max(0, getLineNumberFromPosition(editorValue, end) - 1);
       setSelectionLines({ start: startLine, end: endLine });
     }
   };
 
-  const findMatchingBracket = (cursorPos: number) => {
+  const findMatchingBracket = (cursorPos: number, text: string = cleanValue) => {
     const brackets = ['()', '[]', '{}'];
     const openBrackets = ['(', '[', '{'];
     const closeBrackets = [')', ']', '}'];
-    
-    const charAtCursor = cleanValue.charAt(cursorPos);
-    const charBeforeCursor = cleanValue.charAt(cursorPos - 1);
+
+    const charAtCursor = text.charAt(cursorPos);
+    const charBeforeCursor = text.charAt(cursorPos - 1);
     
     let searchChar = '';
     let searchPos = cursorPos;
@@ -153,8 +165,8 @@ const MonacoEditor = ({
     
     if (isOpenBracket) {
       // Search forward for closing bracket
-      for (let i = searchPos + 1; i < cleanValue.length; i++) {
-        const char = cleanValue.charAt(i);
+      for (let i = searchPos + 1; i < text.length; i++) {
+        const char = text.charAt(i);
         if (char === openChar) count++;
         else if (char === closeChar) {
           count--;
@@ -167,7 +179,7 @@ const MonacoEditor = ({
     } else {
       // Search backward for opening bracket
       for (let i = searchPos - 1; i >= 0; i--) {
-        const char = cleanValue.charAt(i);
+        const char = text.charAt(i);
         if (char === closeChar) count++;
         else if (char === openChar) {
           count--;
@@ -526,7 +538,7 @@ const MonacoEditor = ({
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/\"/g, '&quot;')
+      .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
 
   const highlightCodeSegment = (segment: string): string => {
@@ -768,7 +780,7 @@ const MonacoEditor = ({
                 top: currentLineTop,
                 left: 0,
                 right: 0,
-                height: 20,
+                height: LINE_HEIGHT,
                 background: 'rgba(255, 255, 255, 0.04)',
                 borderTop: '1px solid rgba(255, 255, 255, 0.06)',
                 borderBottom: '1px solid rgba(0, 0, 0, 0.4)',
@@ -784,16 +796,16 @@ const MonacoEditor = ({
               transform: `translateY(-${scrollInfo.scrollTop}px)`,
               fontFamily: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
               fontSize: '14px',
-              lineHeight: '20px',
+              lineHeight: `${LINE_HEIGHT}px`,
               textAlign: 'right'
             }}
           >
             {lineNumbers.map((num, index) => (
-              <div 
+              <div
                 key={index}
                 style={{
-                  height: '20px',
-                  lineHeight: '20px',
+                  height: `${LINE_HEIGHT}px`,
+                  lineHeight: `${LINE_HEIGHT}px`,
                   color: (index + 1) === currentLine ? '#cccccc' : '#6e7681',
                   fontWeight: '400'
                 }}
@@ -850,7 +862,7 @@ const MonacoEditor = ({
                 top: currentLineTop,
                 left: 0,
                 right: 32,
-                height: 20,
+                height: LINE_HEIGHT,
                 background: 'rgba(255, 255, 255, 0.05)',
                 borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                 borderBottom: '1px solid rgba(0, 0, 0, 0.35)',
@@ -870,10 +882,13 @@ const MonacoEditor = ({
                     key={line}
                     style={{
                       position: 'absolute',
-                      top: 16 + line * 20 - scrollInfo.scrollTop,
+                      top:
+                        LINE_PADDING_TOP +
+                        line * LINE_HEIGHT -
+                        scrollInfo.scrollTop,
                       left: 0,
                       right: 32,
-                      height: 20,
+                      height: LINE_HEIGHT,
                       background: 'rgba(173, 214, 255, 0.3)',
                       transform: `translateX(-${scrollInfo.scrollLeft}px)`,
                       pointerEvents: 'none',
