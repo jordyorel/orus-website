@@ -57,42 +57,69 @@ print(p.x)`;
           <div className="flex justify-end">
             <Badge className="bg-gold-500/90 border-2 border-gold-400 text-charcoal-950 px-6 py-3 text-base font-bold backdrop-blur-sm shadow-xl shadow-gold-500/30 hover:shadow-gold-400/40 transition-all duration-300 hover:bg-gold-400 hover:scale-105">
               <Code2 className="w-5 h-5 mr-2 text-charcoal-900" />
-              <span className="text-charcoal-900 font-mono tracking-wide">v0.7.0</span>
+              <span className="text-charcoal-900 font-mono tracking-wide">v0.6.2</span>
             </Badge>
           </div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 lg:py-40 text-center">
-          {/* Hero Title */}
-          <h1 className="text-5xl lg:text-7xl font-bold mb-6">
-            <span className="text-white">The </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600">
-              Orus
-            </span>
-          </h1>
-          <h2 className="text-2xl lg:text-4xl font-light text-charcoal-300 mb-8">
-            Programming Language
-          </h2>
-          
-          {/* Hero Tagline */}
-          <p className="text-xl lg:text-2xl text-charcoal-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-            An experimental interpreted language influenced by modern scripting and Rust-like syntax.
-            Prototype quickly while retaining structure, generics, and strong runtime diagnostics.
-          </p>
-          
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/play">
-              <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8 py-3 text-lg">
-                Open Playground
-                <ArrowRight className="ml-2" size={20} />
-              </Button>
-            </Link>
+        <div className="relative max-w-7xl px-6 py-24 lg:py-40 lg:pl-16">
+          <div className="grid gap-16 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-start">
+            <div className="text-left">
+              {/* Hero Title */}
+              <h1 className="text-5xl lg:text-7xl font-bold mb-6">
+                <span className="text-white">The </span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600">
+                  Orus
+                </span>
+              </h1>
+              <h2 className="text-2xl lg:text-4xl font-light text-charcoal-300 mb-6">
+                Programming Language
+              </h2>
+
+              {/* Hero Tagline */}
+              <p className="text-xl lg:text-2xl text-charcoal-400 max-w-3xl mb-10 leading-relaxed">
+                An experimental interpreted language influenced by modern scripting and Rust-like syntax.
+                Prototype quickly while retaining structure, generics, and strong runtime diagnostics.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                <Link to="/play">
+                  <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8 py-3 text-lg w-full sm:w-auto justify-center">
+                    Open Playground
+                    <ArrowRight className="ml-2" size={20} />
+                  </Button>
+                </Link>
+                <Link to="/tutorial">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-gold-500/60 text-gold-300 hover:bg-gold-500/10 px-8 py-3 text-lg w-full sm:w-auto justify-center"
+                  >
+                    Read Tutorial
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Code Example - desktop */}
+            <div className="hidden lg:block">
+              <div className="text-left mb-6">
+                <h3 className="text-2xl font-semibold text-white mb-2">Hello World in Orus</h3>
+                <p className="text-charcoal-400">Simple, expressive, and powerful</p>
+              </div>
+              <Card className="bg-charcoal-900/50 border-charcoal-700 p-6 backdrop-blur-sm">
+                <SyntaxHighlighter 
+                  code={codeExample}
+                  language="orus"
+                />
+              </Card>
+            </div>
           </div>
-          
-          {/* Code Example */}
-          <div className="mt-20 max-w-4xl mx-auto">
-            <div className="text-center mb-8">
+
+          {/* Code Example - mobile */}
+          <div className="mt-16 lg:hidden">
+            <div className="text-left mb-6">
               <h3 className="text-2xl font-semibold text-white mb-2">Hello World in Orus</h3>
               <p className="text-charcoal-400">Simple, expressive, and powerful</p>
             </div>
