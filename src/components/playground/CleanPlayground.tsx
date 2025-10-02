@@ -77,7 +77,6 @@ const CleanPlayground = () => {
   });
 
   const [isPressed, setIsPressed] = useState(false);
-  const [showOutput, setShowOutput] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [isSettingsClosing, setIsSettingsClosing] = useState(false);
   const [isSettingsAnimating, setIsSettingsAnimating] = useState(false);
@@ -110,26 +109,12 @@ const CleanPlayground = () => {
     }
   }, [code, currentFile]);
 
-  // Show output when new content arrives
-  useEffect(() => {
-    if (output && !isRunning) {
-      // Slight delay for smooth appearance
-      setTimeout(() => {
-        setShowOutput(true);
-      }, 100);
-    }
-  }, [output, isRunning]);
-
   const handleRunCode = () => {
     if (isRunning) {
       cancelExecution();
-      setShowOutput(true);
     } else {
       // Make sure we're using the most current version of code for the current file
       const codeToRun = files[currentFile] || code;
-      
-      // Animate output disappearing
-      setShowOutput(false);
       
       // Clear terminal before running new program
       clearOutput();
@@ -138,7 +123,7 @@ const CleanPlayground = () => {
       setIsPressed(true);
       setTimeout(() => setIsPressed(false), 150);
       
-      // Wait for fade out animation, then run code
+      // Brief pause before kicking off execution so the latest editor state settles
       setTimeout(() => {
         // Update code in the playground hook if needed
         if (code !== codeToRun) {
@@ -576,30 +561,19 @@ const CleanPlayground = () => {
               {/* Terminal Content */}
               <div className="flex-1 p-4 overflow-y-auto font-mono text-sm">
                 {isRunning ? (
-                  <div 
-                    className="animate-fade-in"
-                    style={{ color: palette.statusText }}
-                  >
-                    Running your code...
-                  </div>
+                  <div style={{ color: palette.statusText }}>Running your code...</div>
                 ) : hasOutput ? (
-                  <div 
-                    className={`transition-all duration-300 ${
-                      showOutput ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
-                    }`}
-                  >
-                    {/* Output content - WHITE */}
+                  <div>
                     <div 
                       className="whitespace-pre-wrap"
                       style={{ color: palette.outputText }}
                     >
                       {displayOutput}
                     </div>
-                    {/* Cursor after output */}
                     <div className="flex items-center">
                       <span style={{ color: palette.promptText }}>$ </span>
                       <div 
-                        className="w-2 h-4 ml-1 animate-pulse"
+                        className="w-2 h-4 ml-1"
                         style={{
                           animation: 'blink 1s infinite',
                           backgroundColor: palette.cursorColor,

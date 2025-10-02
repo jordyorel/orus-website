@@ -335,13 +335,15 @@ const MonacoEditor = ({
       // Get current line
       const lines = value.substring(0, start).split('\n');
       const currentLine = lines[lines.length - 1];
+      const lineBeforeComment = currentLine.split('//')[0] ?? '';
+      const trimmedLine = lineBeforeComment.trim();
       
       // Calculate indentation
       const indentMatch = currentLine.match(/^(\s*)/);
       const currentIndent = indentMatch ? indentMatch[1] : '';
       
       // Check if we need extra indentation (after opening brackets)
-      const needsExtraIndent = /[{[(]\s*$/.test(currentLine.trim());
+      const needsExtraIndent = /[{[(]\s*$/.test(trimmedLine) || /:\s*$/.test(trimmedLine);
       const extraIndent = needsExtraIndent ? '    ' : '';
       
       // Check if next character is a closing bracket

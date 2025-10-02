@@ -51,6 +51,7 @@
 @layer base {
   * {
     @apply border-border;
+    scrollbar-color: #4f4f4f #1a1a1a;
   }
 
   body {
@@ -72,9 +73,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gold-600 rounded-full;
+  @apply bg-charcoal-700;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gold-500;
+  @apply bg-charcoal-500;
 }
