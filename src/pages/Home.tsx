@@ -90,15 +90,6 @@ print(p.x)`;
                     <ArrowRight className="ml-2" size={20} />
                   </Button>
                 </Link>
-                <Link to="/tutorial">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-gold-500/60 text-gold-300 hover:bg-gold-500/10 px-8 py-3 text-lg w-full sm:w-auto justify-center"
-                  >
-                    Read Tutorial
-                  </Button>
-                </Link>
               </div>
             </div>
 
