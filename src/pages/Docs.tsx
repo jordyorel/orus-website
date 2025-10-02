@@ -171,7 +171,7 @@ for i in 0..len(nums) {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/docs/hello-world">
-                  <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold">
+                  <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-50 font-semibold">
                     Start Tutorial
                     <ArrowRight className="ml-2" size={16} />
                   </Button>

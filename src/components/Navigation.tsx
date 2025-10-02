@@ -42,7 +42,7 @@ const Navigation = () => {
                 onLoad={handleLogoLoad}
               />
             ) : (
-              <div className="w-12 h-12 bg-gold-400 rounded flex items-center justify-center text-charcoal-950 font-bold text-sm">
+              <div className="w-12 h-12 bg-gold-400 rounded flex items-center justify-center text-charcoal-50 font-bold text-sm">
                 O
               </div>
             )}

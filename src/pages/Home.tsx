@@ -55,9 +55,9 @@ print(p.x)`;
         {/* Language Version Badge - Top Right */}
         <div className="absolute top-6 right-6 max-w-7xl mx-auto px-6">
           <div className="flex justify-end">
-            <Badge className="bg-gold-500/90 border-2 border-gold-400 text-charcoal-950 px-6 py-3 text-base font-bold backdrop-blur-sm shadow-xl shadow-gold-500/30 hover:shadow-gold-400/40 transition-all duration-300 hover:bg-gold-400 hover:scale-105">
-              <Code2 className="w-5 h-5 mr-2 text-charcoal-900" />
-              <span className="text-charcoal-900 font-mono tracking-wide">v0.6.2</span>
+            <Badge className="bg-gold-500/90 border-2 border-gold-400 text-charcoal-50 px-6 py-3 text-base font-bold backdrop-blur-sm shadow-xl shadow-gold-500/30 hover:shadow-gold-400/40 transition-all duration-300 hover:bg-gold-400 hover:scale-105">
+              <Code2 className="w-5 h-5 mr-2 text-charcoal-50" />
+              <span className="text-charcoal-50 font-mono tracking-wide">v0.6.2</span>
             </Badge>
           </div>
         </div>
@@ -85,7 +85,7 @@ print(p.x)`;
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
                 <Link to="/play">
-                  <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8 py-3 text-lg w-full sm:w-auto justify-center">
+                  <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-50 font-semibold px-8 py-3 text-lg w-full sm:w-auto justify-center">
                     Open Playground
                     <ArrowRight className="ml-2" size={20} />
                   </Button>
@@ -172,7 +172,7 @@ print(p.x)`;
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/play">
-              <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold px-8">
+              <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-charcoal-50 font-semibold px-8">
                 Start in the Playground
               </Button>
             </Link>

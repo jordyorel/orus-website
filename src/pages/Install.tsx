@@ -152,7 +152,7 @@ orusc --project path/to/project`;
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/docs">
-              <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold">
+              <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-50 font-semibold">
                 Read the Docs
               </Button>
             </Link>

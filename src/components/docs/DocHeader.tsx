@@ -14,7 +14,7 @@ const DocHeader = ({ title }: DocHeaderProps) => {
       
       {/* Try in Playground Button */}
       <Link to="/play">
-        <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-950">
+        <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-50">
           <Play size={16} className="mr-2" />
           Try in Playground
         </Button>

@@ -41,7 +41,7 @@ class ErrorBoundary extends Component<Props, State> {
             </p>
             <button
               onClick={() => this.setState({ hasError: false, error: undefined })}
-              className="px-4 py-2 bg-gold-600 text-charcoal-900 rounded hover:bg-gold-500 transition-colors"
+              className="px-4 py-2 bg-gold-600 text-charcoal-50 rounded hover:bg-gold-500 transition-colors"
             >
               Reload Editor
             </button>

@@ -394,7 +394,7 @@ const Roadmap = () => {
                 href="https://github.com/jordyorel/Orus-lang" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-semibold rounded-lg transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-50 font-semibold rounded-lg transition-colors"
               >
                 View Repository
               </a>

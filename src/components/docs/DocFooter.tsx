@@ -75,7 +75,7 @@ const DocFooter = ({ nextSection }: DocFooterProps) => {
       
       {actualNextSection && (
         <Link to={`/docs/${actualNextSection}`} onClick={handleNextClick}>
-          <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-950">
+          <Button className="bg-gold-500 hover:bg-gold-600 text-charcoal-50">
             Next
             <ArrowRight size={16} className="ml-2" />
           </Button>
